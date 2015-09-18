@@ -124,7 +124,16 @@ def main():
         project_name = arguments['<name>']
         template_name = arguments['<template>']
         template_path = os.path.join(template_root, template_name, template_name + ".py")
+        if not os.path.exists(template_path):
+            print("Could not find template {0}".format(template_name))
+            print("Expected to find {0}".format(template_path))
+            print("Installed templates:\n{0}".format(
+                "\n".join([d for d in os.listdir(template_root)])))
+            return 1
         template = imp.load_source(template_name, template_path)
+        if not hasattr(template, 'obi_new'):
+            print ("Error: template {0} does not expose a funciton named obi_new".format(template_name))
+            return 1
         project_path = os.path.join(os.getcwd(), project_name)
         g_speak_home = get_g_speak_home(arguments)
         # regex to extract g-speak version number
