@@ -58,14 +58,15 @@ Options:
 # Install homebrew
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
-# Add the solutions/homebrew-tools tap
-brew tap solutions/homebrew-tools git@gitlab.oblong.com:solutions/homebrew-tools
+# Add the Oblong/homebrew-tools tap @ github.com/Oblong/homebrew-tools
+brew tap Oblong/homebrew-tools
 
-# For dev
-brew install --HEAD obi
+# Install
+brew install obi
 
 # Upgrading
-brew reinstall obi
+brew update
+brew upgrade obi
 ```
 
 ### Ubuntu
@@ -190,8 +191,9 @@ obi stop wall
 
 ## Tasks
 
-### obi new <template> <name>
+### obi new [template] [name]
 ---
+
 `obi new <template> <name>` generates project scaffolding based on a template in your current working directory. Currently, the only templates shipped with obi are [greenhouse](obi/new/greenhouse/greenhouse.py), [rad](obi/new/rad/rad.py), and [yovo](obi/new/yovo/yovo.py).
 
 The user can create and install additional templates for obi to use. An example of this is the template for starting new IBM projects found at [obi-seabed](https://gitlab-ibm.oblong.com/seabed/obi-seabed). After installing this template, you can create new IBM projects as `obi new seabed my-cool-ibm-project`.
