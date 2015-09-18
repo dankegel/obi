@@ -1,0 +1,8 @@
+build
+dist
+obi.egg-info
+*.sublime-workspace
+.DS_Store
+oblong_obi.egg-info/
+wheelhouse
+*.tar.gz
