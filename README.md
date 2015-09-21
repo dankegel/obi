@@ -138,9 +138,9 @@ The install command clones the specified repo to `${HOME}/.local/share/oblong/ob
 ### Upgrading
 
 ```
-obi upgrade greenhouse
-obi upgrade yovo
-obi upgrade rad
+obi template upgrade greenhouse
+obi template upgrade yovo
+obi template upgrade rad
 ```
 
 Runs `git pull` in the appropriate repository.
