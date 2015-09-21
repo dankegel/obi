@@ -98,6 +98,7 @@ def room_task(room_name, task_name=None):
                     print(fabric.colors.green(cmd.rstrip(), bold=True))
         env.print_cmds = print_shell_script
         env.relpath = os.path.relpath
+        env.launch_format_str = "{0} {1} 2>&1 | tee -a {2}"
     else:
         env.user = room.get("user", env.local_user) # needed for remote run
         env.hosts = room.get("hosts", [])
@@ -115,6 +116,7 @@ def room_task(room_name, task_name=None):
         env.cd = fabric.context_managers.cd
         env.print_cmds = lambda: None
         env.relpath = lambda p: p
+        env.launch_format_str = "sh -c '(({0} nohup {1} > {2} 2> {2}) &)'"
     env.build_dir = env.relpath(
         os.path.join(env.project_dir,
                      env.config.get("build-dir", "build")))
@@ -226,7 +228,7 @@ def launch_task(extras):
             env.run(cmd)
         # Launch the application in the background
         log_file = env.relpath(os.path.join(env.project_dir, env.project_name + ".log"))
-        default_launch = "sh -c '(({0} nohup {1} > {2} 2> {2}) &)'".format(
+        default_launch = env.launch_format_str.format(
             env_vars, formatted_launch, log_file)
         env.background_run(env.config.get("launch-cmd", default_launch))
         # Process the post-launch commands
