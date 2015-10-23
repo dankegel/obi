@@ -70,7 +70,7 @@ def room_task(room_name, task_name=None):
         with open(task_sh_file, 'w') as f:
             print("#!/usr/bin/env bash", file=f)
             print("# Produced with obi!", file=f)
-            print("# brew tap solutions/tools git@gitlab.oblong.com:solutions/homebrew-tools", file=f)
+            print("# brew tap Oblong/homebrew-tools", file=f)
             print("# brew install obi", file=f)
             print("set -e", file=f)
             print("set -v\n", file=f)
