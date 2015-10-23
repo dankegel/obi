@@ -193,7 +193,7 @@ def launch_task(extras):
     launch_args = env.config.get("launch-args", [])
 
     # Search for the target in a couple of locations
-    target = os.path.join(env.project_dir, env.config.get("target", env.project_name))
+    target = os.path.join(env.project_dir, env.config.get("target", None))
     if not env.file_exists(target):
         target = os.path.join(env.build_dir, env.project_name)
     if not env.file_exists(target):
