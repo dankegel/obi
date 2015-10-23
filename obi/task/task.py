@@ -25,18 +25,13 @@ def room_task(room_name, task_name=None):
     Configures the fabric globabl env variable for other tasks
     """
     # Load the project.yaml file so we can extract configuration for the given room_name
-    project_yaml = os.path.join(project_yaml_wd(), "project.yaml")
-    if not os.path.exists(project_yaml):
-        abort("Could not find a project.yaml file in this directory or any above it!")
-    config = None
-    with open(project_yaml) as data_file:
-        config = yaml.load(data_file)
-    if not config:
-        abort("Error: problem loading " + project_yaml)
+    project_config = project_yaml()
+    config = load_project_config(project_config)
+
     # Abort if no project name found
     project_name = config.get("name", None)
     if not project_name:
-        abort("Could not find a name listed in project.yaml")
+        abort("No name key found in the project.yaml. Please specify a project name")
     env.project_name = project_name
     # Abort if we cannot find room_name in rooms
     rooms = config.get("rooms", {})
@@ -59,7 +54,7 @@ def room_task(room_name, task_name=None):
     if room.get("is-local", room_name == "localhost" or not room.get("hosts", [])):
         env.hosts = ['localhost']
         env.use_ssh_config = False
-        env.project_dir = project_yaml_wd()
+        env.project_dir = os.path.dirname(project_config)
         env.file_exists = os.path.exists
         env.rsync = lambda: None # Don't rsync when running locally -- noop
         env.cd = fabric.context_managers.lcd
@@ -247,18 +242,33 @@ def parent_dir(current_dir):
     """
     return os.path.abspath(os.path.join(current_dir, os.pardir))
 
-def project_yaml_wd():
+def load_project_config(config_path):
     """
-    Returns the absolute path to the directory containing the project.yaml file
+    Returns a Dict of the project.yaml specifed by config_path or aborts on
+    failure
+    """
+    try:
+        with open(config_path) as config_file:
+            config = yaml.load(config_file)
+            if not config:
+                abort("Error: problem loading " + project_config_file)
+            return config
+    except Exception as e:
+        abort("Cannot load project.yaml file at {0}\nException: {1}".format(config_path, e.message))
+
+def project_yaml():
+    """
+    Returns the absolute path to the project.yaml file
     This function will search the current working directory on up to root
-    If no project.yaml file is found, returns None
+    If no project.yaml file is found, aborts
     """
     current = os.getcwd()
     parent = parent_dir(current)
     while current != parent:
-        if os.path.exists(os.path.join(current, "project.yaml")):
-            return os.path.abspath(current)
+        test_file = os.path.join(current, "project.yaml")
+        if os.path.exists(test_file):
+            return os.path.abspath(test_file)
         else:
             current = parent
             parent = parent_dir(current)
-    return None
+    abort("Could not find the project.yaml file in {0} or any parent directories".format(os.getcwd()))
