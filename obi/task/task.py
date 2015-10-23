@@ -190,15 +190,9 @@ def launch_task(extras):
     if room_protein:
         room_option = "--room={0}".format(room_protein)
 
-    # Search for the screen protein
-    screen_protein = env.config.get("screen-protein", None)
-    if not screen_protein:
-        abort("Screen protein not found, specify screen-protein in project.yaml")
-
-    # Search for the feld protein
-    feld_protein = env.config.get("feld-protein", None)
-    if not feld_protein:
-        abort("Feld protein not found, specify feld-protein in project.yaml")
+    # Search for the screen and feld proteins
+    screen_protein = env.config.get("screen-protein", None) or ""
+    feld_protein = env.config.get("feld-protein", None) or ""
 
     # Handles launch arguments
     launch_args = env.config.get("launch-args", [])
