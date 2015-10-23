@@ -82,9 +82,9 @@ def room_task(room_name, task_name=None):
             Runs the command locally
             Side effect: write the command to a shell script
             """
-            fabric.api.local(cmd)
             with open(task_sh_file, 'a') as f:
                 print(cmd, file=f)
+            fabric.api.local(cmd)
         env.run = local_run
         env.background_run = env.run
         def print_shell_script():
