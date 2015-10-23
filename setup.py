@@ -16,8 +16,8 @@ setup(
     long_description=open('README.md', 'rt').read(),
     author="Justin Shrake",
     author_email="jshrake@oblong.com",
-    url="https://gitlab.oblong.com/solutions/obi",
-    download_url="https://gitlab.oblong.com/solutions/obi",
+    url="https://github.com/Oblong/obi",
+    download_url="https://github.com/Oblong/obi",
     keywords=["g-speak", "greenhouse"],
     install_requires=[
         'docopt==0.6.2',
