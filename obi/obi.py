@@ -20,7 +20,7 @@ screen proteins, and set the names of pools that your program will use.
 
 Usage:
   obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
-  obi go [<room>] [--] [<extras>...]
+  obi go [<room>] [--debug] [--] [<extras>...]
   obi stop [<room>]
   obi clean [<room>]
   obi build [<room>]
@@ -35,6 +35,7 @@ Options:
   --version               Show version.
   --g_speak_home=<path>   Optional: absolute path of g-speak dir to build against.
   --template_home=<path>  Optional: path containing installed obi templates.
+  --debug                 Optional: launches the application in a debugger
 """
 
 from __future__ import print_function
@@ -156,7 +157,7 @@ def main():
         res.update(fabric.api.execute(fabric.api.env.rsync))
         res.update(fabric.api.execute(task.build_task))
         res.update(fabric.api.execute(task.stop_task))
-        res.update(fabric.api.execute(task.launch_task, extras))
+        res.update(fabric.api.execute(task.launch_task, arguments['--debug'], extras))
         fabric.api.env.print_cmds()
     elif arguments['stop']:
         res = fabric.api.execute(task.room_task, room, "stop")
