@@ -192,15 +192,21 @@ def launch_task(extras):
     # Handles launch arguments
     launch_args = env.config.get("launch-args", [])
 
-    # Search for the target in a couple of locations
-    target = os.path.join(env.project_dir, env.config.get("target", None))
+    target = ""
+    # Did the user specify a target?
+    config_target = env.config.get("target", None)
+    if config_target:
+        target = os.path.join(env.project_dir, config_target)
+    # TODO(jshrake): Consider nesting these conditionals
+    # Look for a binary with name env.project_name in the build directory
     if not env.file_exists(target):
         target = os.path.join(env.build_dir, env.project_name)
+    # Look for a binary with name env.project_name in the binary directory
     if not env.file_exists(target):
         target = os.path.join(env.project_dir, "bin", env.project_name)
+    # Just give up -- can't find the target name
     if not env.file_exists(target):
-        abort("""Cannot find target -- please specify the relative path
-              to your resulting binary via the target key""")
+        abort("Cannot find target binary to launch. Please specify the relative path to the binary via the target key")
 
     formatted_launch = "{0} {1} {2} {3} {4} {5} {6}".format(
         env.relpath(target), # {0}
