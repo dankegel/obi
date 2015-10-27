@@ -47,6 +47,12 @@ def room_task(room_name, task_name=None):
     env.config = config_no_rooms
     env.config.update(room)
 
+    # Calling basename on project_name should be harmless
+    # In the case that the user specified target, say, build/foo,
+    # then basename gives us foo
+    env.target_name = os.path.basename(
+        env.config.get("target", env.project_name))
+
     # Running locally if:
     # - User specified is-local: True
     # - Room name is localhost
@@ -118,16 +124,10 @@ def room_task(room_name, task_name=None):
         # NOTE(jshrake): oblong bias! Default to gdb for remote debugging
         default_debug_cmd = env.config.get("debugger", "gdb -ex run --args")
         debug_launch = "{0} " + default_debug_cmd + " {1}"
-        session_name = "{0}-{1}".format(env.local_user, env.project_name)
-        env.debug_launch_format_str = "tmux new -d -s {0} '{1}'".format(session_name, debug_launch)
+        env.debug_launch_format_str = "tmux new -d -s {0} '{1}'".format(env.target_name, debug_launch)
     env.build_dir = env.relpath(
         os.path.join(env.project_dir,
                      env.config.get("build-dir", "build")))
-    # Calling basename on project_name should be harmless
-    # In the case that the user specified target, say, build/foo,
-    # then basename gives us foo
-    env.target_name = os.path.basename(
-        env.config.get("target", env.project_name))
 
 @task
 @parallel
@@ -206,16 +206,15 @@ def launch_task(debug, extras):
     if config_target:
         target = os.path.join(env.project_dir, config_target)
     # TODO(jshrake): Consider nesting these conditionals
-    # Look for a binary with name env.project_name in the build directory
+    # Look for a binary with name env.target_name in the build directory
     if not env.file_exists(target):
-        target = os.path.join(env.build_dir, env.project_name)
-    # Look for a binary with name env.project_name in the binary directory
+        target = os.path.join(env.build_dir, env.target_name)
+    # Look for a binary with name env.target_name in the binary directory
     if not env.file_exists(target):
-        target = os.path.join(env.project_dir, "bin", env.project_name)
+        target = os.path.join(env.project_dir, "bin", env.target_name)
     # Just give up -- can't find the target name
     if not env.file_exists(target):
         abort("Cannot find target binary to launch. Please specify the relative path to the binary via the target key")
-
 
     formatted_launch = "{0} {1} {2} {3} {4} {5} {6}".format(
         env.relpath(target), # {0}
