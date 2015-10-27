@@ -235,7 +235,7 @@ def launch_task(debug, extras):
             launch_cmd = env.config.get("debug-launch-cmd", default_launch)
             env.background_run(launch_cmd)
         else:
-            log_file = env.relpath(os.path.join(env.project_dir, env.project_name + ".log"))
+            log_file = env.relpath(os.path.join(env.project_dir, env.target_name + ".log"))
             default_launch = env.launch_format_str.format(env_vars, formatted_launch, log_file)
             launch_cmd = env.config.get("launch-cmd", default_launch)
             env.background_run(launch_cmd)
