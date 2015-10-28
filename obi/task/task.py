@@ -179,26 +179,6 @@ def launch_task(debug, extras):
     """
     Handles launching the application in obi go
     """
-    # Format the env variables
-    env_vars = env.config.get("env-vars", {})
-    env_vars = " ".join(["{0}={1}".format(key, val) for key, val in env_vars.items()])
-
-    # Format the pool names
-    pools = env.config.get("pools", {}) or {}
-    pools = " ".join(["--{0}={1}".format(name, addr) for name, addr in pools.items()])
-
-    # Configure the room protein flag
-    room_protein = env.config.get("room-protein", None)
-    room_option = ""
-    if room_protein:
-        room_option = "--room={0}".format(room_protein)
-
-    # Search for the screen and feld proteins
-    screen_protein = env.config.get("screen-protein", None) or ""
-    feld_protein = env.config.get("feld-protein", None) or ""
-
-    # Handles launch arguments
-    launch_args = env.config.get("launch-args", [])
 
     target = ""
     # Did the user specify a target?
@@ -216,14 +196,16 @@ def launch_task(debug, extras):
     if not env.file_exists(target):
         abort("Cannot find target binary to launch. Please specify the relative path to the binary via the target key")
 
-    formatted_launch = "{0} {1} {2} {3} {4} {5} {6}".format(
+    launch_args = env.config.get("launch-args", [])
+
+    formatted_launch = "{0} {1} {2}".format(
         env.relpath(target), # {0}
-        pools, # {1}
-        " ".join(launch_args), # {2}
-        " ".join(extras), # {3}
-        room_option, # {4}
-        screen_protein, # {5}
-        feld_protein) # {6}
+        " ".join(extras), # {1}
+        " ".join(launch_args) # {2}
+    )
+
+    env_vars = env.config.get("env-vars", {})
+    env_vars = " ".join(["{0}={1}".format(key, val) for key, val in env_vars.items()])
 
     with env.cd(env.project_dir):
         # Process pre-launch commands
