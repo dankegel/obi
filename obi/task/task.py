@@ -104,9 +104,7 @@ def room_task(room_name, task_name=None):
         env.print_cmds = print_shell_script
         env.relpath = os.path.relpath
         env.launch_format_str = "{0} {1} 2>&1 | tee -a {2}"
-        # NOTE(jshrake): oblong bias! Default to lldb for local debugging
-        default_debug_cmd = env.config.get("debugger", "lldb --")
-        env.debug_launch_format_str = "{0} " + default_debug_cmd + " {1}"
+        env.debug_launch_format_str = "{0} {1} {2}"
     else:
         env.user = room.get("user", env.local_user) # needed for remote run
         env.hosts = room.get("hosts", [])
@@ -125,10 +123,7 @@ def room_task(room_name, task_name=None):
         env.print_cmds = lambda: None
         env.relpath = lambda p: p
         env.launch_format_str = "sh -c '(({0} nohup {1} > {2} 2> {2}) &)'"
-        # NOTE(jshrake): oblong bias! Default to gdb for remote debugging
-        default_debug_cmd = env.config.get("debugger", "gdb -ex run --args")
-        debug_launch = "{0} " + default_debug_cmd + " {1}"
-        env.debug_launch_format_str = "tmux new -d -s {0} '{1}'".format(env.target_name, debug_launch)
+        env.debug_launch_format_str = "tmux new -d -s {0} '{1}'".format(env.target_name, "{0} {1} {2}")
     env.build_dir = env.relpath(
         os.path.join(env.project_dir,
                      env.config.get("build-dir", "build")))
@@ -179,7 +174,7 @@ def stop_task():
 
 @task
 @parallel
-def launch_task(debug, extras):
+def launch_task(debugger, extras):
     """
     Handles launching the application in obi go
     """
@@ -215,8 +210,12 @@ def launch_task(debug, extras):
         # Process pre-launch commands
         for cmd in env.config.get("pre-launch-cmds", []):
             env.run(cmd)
-        if debug:
-            default_launch = env.debug_launch_format_str.format(env_vars, formatted_launch)
+        if debugger:
+            debug_cmd = debugger
+            debuggers = env.config.get("debuggers", None)
+            if debuggers:
+                debug_cmd = debuggers.get(debugger, debug_cmd)
+            default_launch = env.debug_launch_format_str.format(env_vars, debug_cmd, formatted_launch)
             launch_cmd = env.config.get("debug-launch-cmd", default_launch)
             env.background_run(launch_cmd)
         else:

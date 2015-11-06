@@ -20,7 +20,7 @@ screen proteins, and set the names of pools that your program will use.
 
 Usage:
   obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
-  obi go [<room>] [--debug] [--] [<extras>...]
+  obi go [<room>] [--debug=<debugger>] [--] [<extras>...]
   obi stop [<room>]
   obi clean [<room>]
   obi build [<room>]
@@ -35,7 +35,7 @@ Options:
   --version               Show version.
   --g_speak_home=<path>   Optional: absolute path of g-speak dir to build against.
   --template_home=<path>  Optional: path containing installed obi templates.
-  --debug                 Optional: launches the application in a debugger
+  --debug=<debugger>      Optional: launches the application in a debugger.
 """
 
 from __future__ import print_function
