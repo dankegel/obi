@@ -153,11 +153,15 @@ def main():
         fabric.api.env.print_cmds()
     elif arguments['go']:
         extras = arguments.get('<extras>', [])
-        res = fabric.api.execute(task.room_task, room, "go")
-        res.update(fabric.api.execute(fabric.api.env.rsync))
-        res.update(fabric.api.execute(task.build_task))
-        res.update(fabric.api.execute(task.stop_task))
-        res.update(fabric.api.execute(task.launch_task, arguments['--debug'], extras))
+        # Gracefully handle keyboard interrupts
+        try:
+            res = fabric.api.execute(task.room_task, room, "go")
+            res.update(fabric.api.execute(fabric.api.env.rsync))
+            res.update(fabric.api.execute(task.build_task))
+            res.update(fabric.api.execute(task.stop_task))
+            res.update(fabric.api.execute(task.launch_task, arguments['--debug'], extras))
+        except KeyboardInterrupt:
+            pass
         fabric.api.env.print_cmds()
     elif arguments['stop']:
         res = fabric.api.execute(task.room_task, room, "stop")

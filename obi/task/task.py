@@ -85,7 +85,11 @@ def room_task(room_name, task_name=None):
             """
             with open(task_sh_file, 'a') as f:
                 print(cmd, file=f)
-            fabric.api.local(cmd)
+            # Gracefully handle keyboard interrupts
+            try:
+                fabric.api.local(cmd)
+            except KeyboardInterrupt:
+                pass
         env.run = local_run
         env.background_run = env.run
         def print_shell_script():
