@@ -146,8 +146,8 @@ def build_task():
         build_args = " ".join(build_args)
         # Ensure the directory exists
         env.run("mkdir -p {0}".format(env.build_dir))
-        env.run("(cd {0}; cmake {1} ..)".format(env.build_dir, cmake_args))
-        env.run("(cd {0}; cmake --build . -- {1})".format(env.build_dir, build_args))
+        env.run("cmake -H. -B{0} {1}".format(env.build_dir, cmake_args))
+        env.run("cmake --build {0} -- {1}".format(env.build_dir, build_args))
 
 @task
 @parallel
