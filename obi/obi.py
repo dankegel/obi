@@ -111,9 +111,9 @@ def main():
         return subprocess.call(["telnet", "towel.blinkenlights.nl"])
 
     # defaults for the template subcommands
-    default_base_template_dir = os.path.join(os.path.expanduser("~"), ".local")
+    default_base_template_dir = os.path.join(os.path.expanduser("~"), ".local/share")
     default_obi_template_dir = os.path.join(
-        os.environ.get("XDG_DATA_HOME", default_base_template_dir), "share", "oblong", "obi")
+        os.environ.get("XDG_DATA_HOME", default_base_template_dir), "oblong", "obi")
 
     arguments = docopt.docopt(__doc__, version=version, help=True)
     room = arguments.get("<room>", "localhost") or "localhost"

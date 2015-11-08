@@ -132,7 +132,10 @@ obi template install git@gitlab.oblong.com:obi/yovo
 obi template install git@gitlab.oblong.com:obi/rad
 ```
 
-The install command clones the specified repo to `${HOME}/.local/share/oblong/obi` (or `${XDG_DATA_HOME}/share/oblong/obi` if the enviornment variable is specified). Feel free to manage this directory yourself!
+The install command clones the specified repo to
+`~/.local/share/oblong/obi` (or `${XDG_DATA_HOME}/oblong/obi` if that
+environment variable is set). Feel free to manage this directory
+yourself!
 
 ### Upgrading
 
