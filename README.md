@@ -8,7 +8,6 @@ build             Builds the project (optionally, on numerous machines)
 clean             Clean the build directory (optionally, on numerous machines)
 go                Build, stop, and run the project (optionally, on numerous machines)
 ls                List obi templates
-man               Print the readme
 new               Generate project scaffolding based on a obi template
 stop              Stops the application (optionally, on numerous machines)
 template install  Install an obi template
@@ -21,7 +20,7 @@ screen proteins, and set the names of pools that your program will use.
 
 Usage:
   obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
-  obi go [<room>] [--] [<extras>...]
+  obi go [<room>] [--debug=<debugger>] [--] [<extras>...]
   obi stop [<room>]
   obi clean [<room>]
   obi build [<room>]
@@ -29,7 +28,6 @@ Usage:
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
   obi template upgrade <name> [--template_home=<path>]
-  obi (man | readme)
   obi -h | --help | --version
 
 Options:
@@ -37,6 +35,7 @@ Options:
   --version               Show version.
   --g_speak_home=<path>   Optional: absolute path of g-speak dir to build against.
   --template_home=<path>  Optional: path containing installed obi templates.
+  --debug=<debugger>      Optional: launches the application in a debugger.
 ```
 
 * [Install](#install)
