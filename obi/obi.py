@@ -24,6 +24,7 @@ Usage:
   obi stop [<room>]
   obi clean [<room>]
   obi build [<room>]
+  obi rsync [<room>]
   obi ls [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
@@ -170,6 +171,10 @@ def main():
     elif arguments['clean']:
         res = fabric.api.execute(task.room_task, room, "clean")
         res.update(fabric.api.execute(task.clean_task))
+        fabric.api.env.print_cmds()
+    elif arguments['rsync']:
+        res = fabric.api.execute(task.room_task, room, "rsync")
+        res.update(fabric.api.execute(fabric.api.env.rsync))
         fabric.api.env.print_cmds()
     elif arguments['ls']:
         template_root = arguments["--template_home"] or default_obi_template_dir
