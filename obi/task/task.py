@@ -33,6 +33,7 @@ def room_task(room_name, task_name=None):
     if not project_name:
         abort("No name key found in the project.yaml. Please specify a project name")
     env.project_name = project_name
+    env.local_project_dir = os.path.dirname(project_config)
     # Abort if we cannot find room_name in rooms
     rooms = config.get("rooms", {})
     room = rooms.get(room_name, None)
@@ -235,6 +236,7 @@ def rsync_task():
     """
     fabric.api.local(env.config.get("pre-rsync-cmd", ""))
     return fabric.contrib.project.rsync_project(
+        local_dir=env.local_project_dir,
         remote_dir=parent_dir(env.project_dir),
         delete=True,
         exclude=env.config.get("rsync-excludes", []))
