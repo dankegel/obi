@@ -90,7 +90,7 @@ Install `pip` and then `obi`:
 
 ```bash
 easy_install --user pip
-pip install --user git+ssh://git@gitlab.oblong.com/solutions/obi.git
+pip install --user git+ssh://git@github.com/Oblong/obi.git
 ```
 
 #### Ubuntu 12.04
