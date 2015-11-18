@@ -24,6 +24,7 @@ Usage:
   obi stop [<room>]
   obi clean [<room>]
   obi build [<room>]
+  obi rsync [<room>]
   obi ls [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
@@ -41,10 +42,7 @@ Options:
 * [Install](#install)
   - [Mac](#mac)
   - [Ubuntu](#ubuntu)
-* [project.yaml](#projectyaml)
 * [Templates](#templates)
-* [Distribution](#distribution)
-* [Example](#example)
 * [Tasks](#tasks)
 * [Editor tips](#editor-tips)
 
@@ -70,62 +68,14 @@ brew upgrade obi
 
 ### Ubuntu
 
-First, install `python-setuptools`:
-
 ```bash
-sudo apt-get install python-setuptools
-```
-
-Ensure this is on your `PATH`:
-
-```bash
-export PATH=$HOME/.local/bin:$PATH
-```
-
-#### Ubuntu 14.04
-
-On Ubuntu 14.04, you can install both `pip` and `obi` to your home directory.
-
-Install `pip` and then `obi`:
-
-```bash
-easy_install --user pip
 pip install --user git+ssh://git@github.com/Oblong/obi.git
 ```
-
-#### Ubuntu 12.04
-
-On Ubuntu 12.04, you must install `pip` systemwide but can install `obi` to
-your home directory.
-
-Install `pip` with `sudo`:
-
-```bash
-sudo easy_install pip
-```
-
-And update `setuptools` and `distribute` packages:
-
-```bash
-sudo pip install --upgrade setuptools
-sudo pip install --upgrade distribute
-```
-
-Finally, install `obi`:
-
-```bash
-pip install --user git+ssh://git@gitlab.oblong.com/solutions/obi.git
-```
-
-## project.yaml
-
-Todo(jshrake): document the keys of `project.yaml`
-
 ## Templates
 
 ### Installing
 
-Install any template from a git repo
+Install templates from a git repository:
 ```
 obi template install git@gitlab.oblong.com:obi/greenhouse
 obi template install git@gitlab.oblong.com:obi/yovo
@@ -155,50 +105,14 @@ obi remove yovo
 obi remove rad
 ```
 
-Removes the directory.
-
-# Distribution
-
-Make sure to update the `version` in [setup.py](setup.py)! See http://semver.org/
-```bash
-cd obi
-# you may need to install wheel first
-# pip install wheel
-pip wheel .
-```
-
-This will generate a directory `wheelhouse` that contains all the obi wheel along with wheels for all of the dependencies. Tarball this directory and ship it out to the world. Users on the other end can untar it and
-
-```bash
-pip install --find-links /path/to/untared/wheelhouse oblong-obi
-```
-
-## Example
-
-```bash
-# create a new greenhouse project based on gspeak 3.19
-obi new greenhouse appname --g_speak_home=/opt/oblong/g-speak3.19
-cd appname
-# build and run the application locally
-obi go
-# build and run the application on the hex and wall
-# see the project.yaml file for where hex and wall are
-# defined
-obi go hex
-obi go wall
-# stop the application
-obi stop hex
-obi stop wall
-```
+Removes the template.
 
 ## Tasks
 
 ### obi new [template] [name]
 ---
 
-`obi new <template> <name>` generates project scaffolding based on a template in your current working directory. Currently, the only templates shipped with obi are [greenhouse](obi/new/greenhouse/greenhouse.py), [rad](obi/new/rad/rad.py), and [yovo](obi/new/yovo/yovo.py).
-
-The user can create and install additional templates for obi to use. An example of this is the template for starting new IBM projects found at [obi-seabed](https://gitlab-ibm.oblong.com/seabed/obi-seabed). After installing this template, you can create new IBM projects as `obi new seabed my-cool-ibm-project`.
+`obi new <template> <name>` generates project scaffolding based on an installed template in your current working directory.
 
 `obi ls` returns a list of all available obi templates installed on this machine.
 
@@ -221,58 +135,90 @@ obi new greenhouse app-name --g_speak_home=/opt/oblong/g-speak3.19
 obi ls
 ```
 
-## Fabric Tasks
-
-'obi [go | stop | build | clean] [room-name]' are aliases for [`fab room:[room-name][go | stop | build | clean]`](http://www.fabfile.org/). The logic for each task is implemented entirely in the [task.py](obi/task/task.py). If `room-name` is specified, the task is executed on the host machines listed under the associated room in [project.yaml](obi/templates/project.yaml). If `room-name` is not specified, the task is executed on the local machine.
-
 ### obi go [room-name]
 ---
-`obi go [room-name]` builds and runs the application. If no room name is specified, then this task is performed locally (see the `localhost` map in [project.yaml](obi/templates/project.yaml)). If `room-name` is specified, it must match one of the keys listed under the `rooms` map in [project.yaml](obi/templates/project.yaml). The implementation details of how the application is built and launched, both locally and remotely, are in the [fabfile](obi/templates/fabfile.py) (see the definitions of `go`, `local_go` and `remote_go`).
+`obi go [room-name]` builds and runs the application. If `<room-name>` is not specified, then the application is built and ran on the local machine.
 
+#### options
+- `[--debug=<debugger>]`: Specify a toolname to launch the application. This is useful for launching the application with debuggers or profilers:
+```bash
+obi go --debug="lldb --"
+obi go --debug="strace --" roomname
+obi go --debug="gdb -ex run --args" roomname
+```
+
+Users can specify special names debuggers in the `project.yaml`
+
+```yaml
+# Debuggers to use in obi go --debug=<debugger>
+debuggers:
+  gdb: "gdb -ex run --args"
+  lldb: "lldb --"
+  strace: "sudo strace"
+  apitrace: "apitrace trace"
+```
+
+And use them like so:
+```bash
+obi go --debug=gdb roomname
+```
+
+When using `--debug` with a remote set of machines, the application is launched in a tmux session with a name matching the target name. This allows one to ssh into one of the machines, attach to the tmux session and poke around:
+
+```bash
+obi go --debug=gdb roomname
+ssh -t user@host-in-roomname tmux attach -t targetname
+```
+
+This assumes that tmux is installed on the remote machines.
 
 #### example
 
 ```bash
 # Launch the application on the local machine
 obi go
-# Launch application on the host machines listed under wall
-obi go wall
+# Launch application on the host machines listed under the room named room
+obi go room
+# Launch the application with lldb
+obi go --debug="lldb --"
+# Launch the application with apitrace in a remote room
+obi go --debug="apitrace trace" room
 ```
 
 ### obi stop [room-name]
 ---
-`obi stop [<name>]` kills the application on the remote set of hosts specified by `<name>`. The `<name>` specified must match one of the keys listed under the `rooms` map in [project.yaml](obi/templates/project.yaml). This is equivalent to running `pkill -KILL app-name` on each of the remote hosts. If no name is specified, then the application is stopped on the local machine.
+`obi stop [<room-name>]` stops the application. If `<room-name>` is not specified, then the application is stopped on the local machine.
 
 #### example
 ```bash
 # Stop the application on the local machine
 obi stop
-# Stop the application on the host machines listed under hex
-obi stop hex
+# Stop the application on the host machines listed under the room named room
+obi stop room
 ```
 
 ### obi build [room-name]
 ---
-`obi build [room-name]` Builds the application
+`obi build [<room-name>]` builds the application. If `<room-name>` is not specified, then the application is built on the local machine.
 
 #### example
 ```bash
 # Build the application on the local machine
 obi build
-# Build the application on the host machines listed under hex
-obi build hex
+# Build the application on the host machines listed under the room named room
+obi build room
 ```
 
 ### obi clean [room-name]
 ---
-'obi clean [room-name]' cleans the build directory
+`obi clean [<room-name>]` cleans the build directory. If `<room-name>` is not specified, then the build directory on the local machine is cleaned.
 
 #### example
 ```bash
 # Clean the application build directory on the local machine
 obi clean
-# Clean the application build directory on the host machines listed under hex
-obi clean hex
+# Clean the application build directory on the host machines listed under the room named room
+obi clean room
 ```
 
 ## Editor tips
