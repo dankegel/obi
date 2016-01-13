@@ -69,7 +69,7 @@ brew upgrade obi
 ### Ubuntu
 
 ```bash
-pip install --user git+ssh://git@github.com/Oblong/obi.git
+pip install --user git+https://github.com/Oblong/obi.git
 ```
 ## Templates
 
