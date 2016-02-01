@@ -68,14 +68,14 @@ brew upgrade obi
 
 ### Ubuntu
 
+```bash
 # Install dependencies (if using system python)
 
-* sudo apt-get install python-pip
-* sudo apt-get install python-dev
+sudo apt-get install python-pip
+sudo apt-get install python-dev
 
 # Install
 
-```bash
 pip install --user git+https://github.com/Oblong/obi.git
 ```
 ## Templates
