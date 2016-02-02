@@ -71,8 +71,7 @@ brew upgrade obi
 ```bash
 # Install dependencies (if using system python)
 
-sudo apt-get install python-pip
-sudo apt-get install python-dev
+sudo apt-get install python-dev python-pip
 
 # Install
 
