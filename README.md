@@ -84,7 +84,7 @@ pip install --user git+https://github.com/Oblong/obi.git
 Install templates from a git repository:
 ```
 obi template install git@gitlab.oblong.com:obi/greenhouse
-obi template install git@gitlab.oblong.com:obi/yovo
+obi template install git@gitlab.oblong.com:obi/gspeak
 obi template install git@gitlab.oblong.com:obi/rad
 ```
 
@@ -97,7 +97,7 @@ yourself!
 
 ```
 obi template upgrade greenhouse
-obi template upgrade yovo
+obi template upgrade gspeak
 obi template upgrade rad
 ```
 
@@ -107,7 +107,7 @@ Runs `git pull` in the appropriate repository.
 
 ```
 obi remove greenhouse
-obi remove yovo
+obi remove gspeak
 obi remove rad
 ```
 
@@ -129,7 +129,7 @@ If the `--g_speak_home` option is not specified, obi attempts to find a default 
 
 #### example
 ```bash
-obi new greenhouse app-name --g_speak_home=/opt/oblong/g-speak3.19
+obi new greenhouse app-name --g_speak_home=/opt/oblong/g-speak3.22
 ```
 
 ### obi ls
