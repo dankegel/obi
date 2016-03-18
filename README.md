@@ -76,6 +76,10 @@ sudo apt-get install python-dev python-pip
 # Install
 
 pip install --user git+https://github.com/Oblong/obi.git
+
+# Upgrading
+
+pip install --upgrade --user git+https://github.com/Oblong/obi.git
 ```
 ## Templates
 
