@@ -81,16 +81,17 @@ def get_g_speak_home(arguments):
         set_by = "environment variable G_SPEAK_HOME"
     else:
         path = os.path.join(os.path.sep, "opt", "oblong")
-        items = [os.path.join(path, item) for item in os.listdir(path) if "g-speak" in item]
-        items = [item for item in items if os.path.isdir(item)]
-        items.sort()
-        # the last element will be the directory with the most recent
-        # version of g-speak
-        if not items is None:
+        try:
+            items = [os.path.join(path, item) for item in os.listdir(path) if "g-speak" in item]
+            items = [item for item in items if os.path.isdir(item)]
+            items.sort()
+            # the last element will be the directory with the most recent
+            # version of g-speak
             g_speak_home = items[-1]
             set_by = "directory lookup"
-        else:
-            print("Could not find the g_speak home directory")
+        except (OSError, IndexError):
+            print("Could not find the g_speak home directory in {}"
+                  .format(path))
             print("Run new again and specify: --g_speak_home=/path/to/g-speak")
             sys.exit(1)
 
