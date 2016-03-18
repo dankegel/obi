@@ -104,7 +104,7 @@ def room_task(room_name, task_name=None):
                     print(fabric.colors.green(cmd.rstrip(), bold=True))
         env.print_cmds = print_shell_script
         env.relpath = os.path.relpath
-        env.launch_format_str = "{0} {1} 2>&1 | tee -a {2}"
+        env.launch_format_str = "{0} {1}"
         env.debug_launch_format_str = "{0} {1} {2}"
     else:
         env.user = room.get("user", env.local_user) # needed for remote run
