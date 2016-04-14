@@ -195,14 +195,25 @@ def main():
             return res
         elif arguments['upgrade']:
             template_root = arguments["--template_home"] or default_obi_template_dir
-            template_path = os.path.join(template_root, arguments["<name>"])
-            res = subprocess.call(["git", "pull"], cwd=template_path)
-            print("Upgraded template at {}".format(template_path))
-            return res
+            template_name = arguments["<name>"]
+            template_path = os.path.join(template_root, template_name)
+            if os.path.exists(template_path):
+                res = subprocess.call(["git", "pull"], cwd=template_path)
+                print("Upgraded template at {}".format(template_path))
+                return res
+            else:
+                print("No template installed with name " + template_name)
+                return 1
         elif arguments['remove']:
             template_root = arguments["--template_home"] or default_obi_template_dir
-            template_path = os.path.join(template_root, arguments["<name>"])
-            return subprocess.call(["rm", "-rf", template_path])
+            template_name = arguments["<name>"]
+            template_path = os.path.join(template_root, template_name)
+            if os.path.exists(template_path):
+                return subprocess.call(["rm", "-rf", template_path])
+            else:
+                print("No template installed with name " + template_name)
+                return 1
+
     return 0
 
 if __name__ == '__main__':
