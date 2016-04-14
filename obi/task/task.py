@@ -235,9 +235,23 @@ def rsync_task():
     Task wrapper around fabric's rsync_project
     """
     fabric.api.local(env.config.get("pre-rsync-cmd", ""))
+    """ NOTE(jshrake): local_dir must end in a trailing slash
+    From http://docs.fabfile.org/en/1.11/api/contrib/project.html
+    - If local_dir ends with a trailing slash, the files will be
+    dropped inside of remote_dir.
+    E.g. rsync_project("/home/username/project/", "foldername/")
+    will drop the contents of foldername inside of /home/username/project.
+    - If local_dir does not end with a trailing slash
+    (and this includes the default scenario, when local_dir is not
+    specified), remote_dir is effectively the "parent" directory, and
+    new directory named after local_dir will be created inside of it.
+    So rsync_project("/home/username", "foldername") would create
+    a new directory /home/username/foldername (if needed) and place the
+    files there.
+    """
     return fabric.contrib.project.rsync_project(
-        local_dir=env.local_project_dir,
-        remote_dir=parent_dir(env.project_dir),
+        local_dir=env.local_project_dir + "/",
+        remote_dir=env.project_dir,
         delete=True,
         exclude=env.config.get("rsync-excludes", []))
 
