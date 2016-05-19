@@ -20,11 +20,11 @@ screen proteins, and set the names of pools that your program will use.
 
 Usage:
   obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
-  obi go [<room>] [--debug=<debugger>] [--] [<extras>...]
-  obi stop [<room>]
-  obi clean [<room>]
-  obi build [<room>]
-  obi rsync [<room>]
+  obi go [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
+  obi stop [<room>] [--dry-run]
+  obi clean [<room>] [--dry-run]
+  obi build [<room>] [--dry-run]
+  obi rsync [<room>] [--dry-run]
   obi ls [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
@@ -34,6 +34,7 @@ Usage:
 Options:
   -h --help               Show this screen.
   --version               Show version.
+  --dry-run               Optional: output the list of commands that the task runs.
   --g_speak_home=<path>   Optional: absolute path of g-speak dir to build against.
   --template_home=<path>  Optional: path containing installed obi templates.
   --debug=<debugger>      Optional: launches the application in a debugger.
@@ -122,6 +123,8 @@ def main():
     if room == '--':
         room = "localhost" # special case: docopt caught '--' as a room name
 
+    if arguments.get('--dry-run', False):
+        fabric.api.execute(task.dryrun)
     if arguments['new']:
         template_root = arguments["--template_home"] or default_obi_template_dir
         project_name = arguments['<name>']
@@ -152,7 +155,6 @@ def main():
         res = fabric.api.execute(task.room_task, room, "build")
         res.update(fabric.api.execute(fabric.api.env.rsync))
         res.update(fabric.api.execute(task.build_task))
-        fabric.api.env.print_cmds()
     elif arguments['go']:
         extras = arguments.get('<extras>', [])
         # Gracefully handle keyboard interrupts
@@ -164,19 +166,15 @@ def main():
             res.update(fabric.api.execute(task.launch_task, arguments['--debug'], extras))
         except KeyboardInterrupt:
             pass
-        fabric.api.env.print_cmds()
     elif arguments['stop']:
         res = fabric.api.execute(task.room_task, room, "stop")
         res.update(fabric.api.execute(task.stop_task))
-        fabric.api.env.print_cmds()
     elif arguments['clean']:
         res = fabric.api.execute(task.room_task, room, "clean")
         res.update(fabric.api.execute(task.clean_task))
-        fabric.api.env.print_cmds()
     elif arguments['rsync']:
         res = fabric.api.execute(task.room_task, room, "rsync")
         res.update(fabric.api.execute(fabric.api.env.rsync))
-        fabric.api.env.print_cmds()
     elif arguments['ls']:
         template_root = arguments["--template_home"] or default_obi_template_dir
         if os.path.exists(template_root):

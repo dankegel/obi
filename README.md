@@ -20,11 +20,11 @@ screen proteins, and set the names of pools that your program will use.
 
 Usage:
   obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
-  obi go [<room>] [--debug=<debugger>] [--] [<extras>...]
-  obi stop [<room>]
-  obi clean [<room>]
-  obi build [<room>]
-  obi rsync [<room>]
+  obi go [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
+  obi stop [<room>] [--dry-run]
+  obi clean [<room>] [--dry-run]
+  obi build [<room>] [--dry-run]
+  obi rsync [<room>] [--dry-run]
   obi ls [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
@@ -34,6 +34,7 @@ Usage:
 Options:
   -h --help               Show this screen.
   --version               Show version.
+  --dry-run               Optional: output the list of commands that the task runs.
   --g_speak_home=<path>   Optional: absolute path of g-speak dir to build against.
   --template_home=<path>  Optional: path containing installed obi templates.
   --debug=<debugger>      Optional: launches the application in a debugger.

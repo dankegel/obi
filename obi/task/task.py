@@ -12,11 +12,29 @@ import stat
 import yaml
 
 from fabric.api import env  # the global env variable
+from fabric.api import (local, run) # the global env variable
 from fabric.api import (task, parallel, runs_once) #decorators
 from fabric.utils import abort
 from fabric.contrib.project import rsync_project
 from fabric.contrib.files import exists
 import fabric.colors
+
+# Courtesy of https://github.com/pyinvoke/invoke/issues/324#issuecomment-215289564
+@task
+def dryrun():
+    """Show, but don't run fabric commands"""
+
+    global local, run
+    fabric.state.output['running'] = False
+
+    # Redefine the local and run functions to simply output the command
+    def local(command, capture=False, shell=None, running=None):
+        print("{}".format(command))
+
+    def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
+            warn_only=False, stdout=None, stderr=None, running=None, timeout=None, shell_escape=None,
+            capture_buffer_size=None):
+        print("ssh -t {}@{} \"{}\"".format(env.user, env.host_string, command))
 
 @task
 @runs_once
@@ -67,42 +85,8 @@ def room_task(room_name, task_name=None):
         env.cd = fabric.context_managers.lcd
         # Generate a shell script that duplicates the task
         task_name = task_name or env.tasks[-1]
-        task_sh_name = "obi-{0}-{1}.sh".format(task_name.replace(":", ""), room_name)
-        task_sh_file = os.path.join(env.project_dir, task_sh_name)
-        with open(task_sh_file, 'w') as f:
-            print("#!/usr/bin/env bash", file=f)
-            print("# Produced with obi!", file=f)
-            print("# brew tap Oblong/homebrew-tools", file=f)
-            print("# brew install obi", file=f)
-            print("set -e", file=f)
-            print("set -v\n", file=f)
-        # Make sure the script is executable
-        task_sh_st = os.stat(task_sh_file)
-        os.chmod(task_sh_file, task_sh_st.st_mode | stat.S_IEXEC)
-        def local_run(cmd):
-            """
-            Runs the command locally
-            Side effect: write the command to a shell script
-            """
-            with open(task_sh_file, 'a') as f:
-                print(cmd, file=f)
-            # Gracefully handle keyboard interrupts
-            try:
-                fabric.api.local(cmd)
-            except KeyboardInterrupt:
-                pass
-        env.run = local_run
+        env.run = local
         env.background_run = env.run
-        def print_shell_script():
-            """
-            Prints the commands written to the shell script
-            See local_run
-            """
-            print(fabric.colors.magenta("$ cat " + task_sh_file, bold=True))
-            with open(task_sh_file, 'r') as f:
-                for cmd in f.readlines():
-                    print(fabric.colors.green(cmd.rstrip(), bold=True))
-        env.print_cmds = print_shell_script
         env.relpath = os.path.relpath
         env.launch_format_str = "{0} {1}"
         env.debug_launch_format_str = "{0} {1} {2}"
@@ -116,12 +100,11 @@ def room_task(room_name, task_name=None):
                                                 "tmp",
                                                 env.local_user,
                                                 project_name))
-        env.run = fabric.api.run
+        env.run = run
         env.background_run = lambda cmd: env.run(cmd, pty=False)
         env.file_exists = fabric.contrib.files.exists
         env.rsync = rsync_task
         env.cd = fabric.context_managers.cd
-        env.print_cmds = lambda: None
         env.relpath = lambda p: p
         env.launch_format_str = "sh -c '(({0} nohup {1} > {2} 2> {2}) &)'"
         env.debug_launch_format_str = "tmux new -d -s {0} '{1}'".format(env.target_name, "{0} {1} {2}")
@@ -254,7 +237,8 @@ def rsync_task():
         local_dir=env.local_project_dir + "/",
         remote_dir=env.project_dir,
         delete=True,
-        exclude=env.config.get("rsync-excludes", []))
+        exclude=env.config.get("rsync-excludes", []),
+        capture=True)
 
 def parent_dir(current_dir):
     """
