@@ -128,9 +128,11 @@ def build_task():
         # Arguments for the build step
         build_args = env.config.get("build-args", [])
         build_args = " ".join(build_args)
-        # Ensure the directory exists
-        env.run("mkdir -p {0}".format(env.build_dir))
-        env.run("cmake -H\"{0}\" -B\"{1}\" {2}".format(env.project_dir, env.build_dir, cmake_args))
+        # If the build_dir does not exist, then then we need to create it
+        # and configure cmake before building
+        if not env.file_exists(env.build_dir):
+            env.run("mkdir -p {0}".format(env.build_dir))
+            env.run("cmake -H\"{0}\" -B\"{1}\" {2}".format(env.project_dir, env.build_dir, cmake_args))
         env.run("cmake --build \"{0}\" -- {1}".format(env.build_dir, build_args))
 
 @task
