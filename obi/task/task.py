@@ -249,6 +249,7 @@ def rsync_task():
     a new directory /home/username/foldername (if needed) and place the
     files there.
     """
+    env.run("mkdir -p {0}".format(env.project_dir))
     return fabric.contrib.project.rsync_project(
         local_dir=env.local_project_dir + "/",
         remote_dir=env.project_dir,
