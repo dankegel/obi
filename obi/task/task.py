@@ -14,6 +14,7 @@ import yaml
 from fabric.api import env  # the global env variable
 from fabric.api import (local, run) # the global env variable
 from fabric.api import (task, parallel, runs_once) #decorators
+
 from fabric.utils import abort
 from fabric.contrib.project import rsync_project
 from fabric.contrib.files import exists
@@ -152,11 +153,38 @@ def stop_task():
     obi stop
     """
     with env.cd(env.project_dir):
-        for cmd in env.config.get("on-stop-cmds", []):
+        # fall-back to on-stop-cmds for backwards compatibility
+        # TODO(jshrake): remove support for the amiguous on-stop-cmds key
+        for cmd in env.config.get("pre-stop-cmds", env.config.get("on-stop-cmds", [])):
             env.run(cmd)
-    default_stop = "pkill -KILL -f '[a-z/]+{0} .*' || true".format(env.target_name)
+    with env.cd(env.project_dir):
+        for cmd in env.config.get("local-pre-stop-cmds", []):
+            local(cmd)
+    default_stop = "pkill -SIGINT -f '[a-z/]+{0} .*' || true".format(env.target_name)
     stop_cmd = env.config.get("stop-cmd", default_stop)
     env.run(stop_cmd)
+    with env.cd(env.project_dir):
+        for cmd in env.config.get("post-stop-cmds", []):
+            env.run(cmd)
+    with env.cd(env.project_dir):
+        for cmd in env.config.get("local-post-stop-cmds", []):
+            local(cmd)
+
+@task
+@parallel
+def fetch_task(fetch_files_to_dir, files):
+    """
+    obi fetch
+    """
+    fetch_dir = fetch_files_to_dir + '/%(host)s/%(path)s'
+    files_to_fetch = files or env.config.get("fetch", [])
+    with env.cd(env.project_dir):
+        for f in files_to_fetch:
+            try:
+                fabric.operations.get(f, fetch_dir)
+            # dont fail when f doesn't exist on the remote machines
+            except:
+                continue
 
 @task
 @parallel

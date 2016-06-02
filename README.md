@@ -7,9 +7,11 @@ Available tasks:
 build             Builds the project (optionally, on numerous machines)
 clean             Clean the build directory (optionally, on numerous machines)
 go                Build, stop, and run the project (optionally, on numerous machines)
-ls                List obi templates
 new               Generate project scaffolding based on a obi template
 stop              Stops the application (optionally, on numerous machines)
+rsync             Rsync your local project directory to remote machines
+fetch             Download remote files to your local project directory
+ls                List obi templates
 template install  Install an obi template
 template remove   Remove an installed obi template
 template upgrade  Upgrade an installed obi template
@@ -24,7 +26,8 @@ Usage:
   obi stop [<room>] [--dry-run]
   obi clean [<room>] [--dry-run]
   obi build [<room>] [--dry-run]
-  obi rsync [<room>] [--dry-run]
+  obi rsync <room> [--dry-run]
+  obi fetch <room> [<file>...] [--dry-run]
   obi ls [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
