@@ -12,7 +12,7 @@ import stat
 import yaml
 
 from fabric.api import env  # the global env variable
-from fabric.api import (local, run, put) # the global env variable
+from fabric.api import (local, run) # the global env variable
 from fabric.api import (task, parallel, runs_once) #decorators
 
 from fabric.utils import abort
@@ -169,16 +169,6 @@ def stop_task():
     with env.cd(env.project_dir):
         for cmd in env.config.get("local-post-stop-cmds", []):
             local(cmd)
-
-@task
-@parallel
-def script_task(script_path):
-    # NOTE(jshrake): give the script an arbitrary prefix so as
-    # not clobber anything in the users project directory
-    script_name = "obi-script-" + os.path.basename(script_path)
-    with env.cd(env.project_dir):
-        put(script_path, script_name, mode=0755)
-        env.run("./{} {}".format(script_name, env.project_name))
 
 @task
 @parallel

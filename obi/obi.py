@@ -11,7 +11,6 @@ new               Generate project scaffolding based on a obi template
 stop              Stops the application (optionally, on numerous machines)
 rsync             Rsync your local project directory to remote machines
 fetch             Download remote files to your local project directory
-script            Run a local script on remote machines
 ls                List obi templates
 template install  Install an obi template
 template remove   Remove an installed obi template
@@ -29,7 +28,6 @@ Usage:
   obi build [<room>] [--dry-run]
   obi rsync <room> [--dry-run]
   obi fetch <room> [<file>...] [--dry-run]
-  obi script <room> <script> [--dry-run]
   obi ls [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
@@ -201,9 +199,6 @@ def main():
                 git_log_file.write(git_log)
         except:
             pass
-    elif arguments['script']:
-        res = fabric.api.execute(task.room_task, room, "script")
-        res.update(fabric.api.execute(task.script_task, arguments.get('<script>', "")))
 
 
     elif arguments['ls']:
