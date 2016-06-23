@@ -7,9 +7,11 @@ Available tasks:
 build             Builds the project (optionally, on numerous machines)
 clean             Clean the build directory (optionally, on numerous machines)
 go                Build, stop, and run the project (optionally, on numerous machines)
-ls                List obi templates
 new               Generate project scaffolding based on a obi template
 stop              Stops the application (optionally, on numerous machines)
+rsync             Rsync your local project directory to remote machines
+fetch             Download remote files to your local project directory
+ls                List obi templates
 template install  Install an obi template
 template remove   Remove an installed obi template
 template upgrade  Upgrade an installed obi template
@@ -20,11 +22,12 @@ screen proteins, and set the names of pools that your program will use.
 
 Usage:
   obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
-  obi go [<room>] [--debug=<debugger>] [--] [<extras>...]
-  obi stop [<room>]
-  obi clean [<room>]
-  obi build [<room>]
-  obi rsync [<room>]
+  obi go [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
+  obi stop [<room>] [--dry-run]
+  obi clean [<room>] [--dry-run]
+  obi build [<room>] [--dry-run]
+  obi rsync <room> [--dry-run]
+  obi fetch <room> [<file>...] [--dry-run]
   obi ls [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
@@ -34,6 +37,7 @@ Usage:
 Options:
   -h --help               Show this screen.
   --version               Show version.
+  --dry-run               Optional: output the list of commands that the task runs.
   --g_speak_home=<path>   Optional: absolute path of g-speak dir to build against.
   --template_home=<path>  Optional: path containing installed obi templates.
   --debug=<debugger>      Optional: launches the application in a debugger.
@@ -49,6 +53,7 @@ import subprocess
 import errno
 import fabric
 import docopt
+import datetime
 from . import task
 
 def mkdir_p(path):
@@ -122,6 +127,8 @@ def main():
     if room == '--':
         room = "localhost" # special case: docopt caught '--' as a room name
 
+    if arguments.get('--dry-run', False):
+        fabric.api.execute(task.dryrun)
     if arguments['new']:
         template_root = arguments["--template_home"] or default_obi_template_dir
         project_name = arguments['<name>']
@@ -152,7 +159,6 @@ def main():
         res = fabric.api.execute(task.room_task, room, "build")
         res.update(fabric.api.execute(fabric.api.env.rsync))
         res.update(fabric.api.execute(task.build_task))
-        fabric.api.env.print_cmds()
     elif arguments['go']:
         extras = arguments.get('<extras>', [])
         # Gracefully handle keyboard interrupts
@@ -164,19 +170,37 @@ def main():
             res.update(fabric.api.execute(task.launch_task, arguments['--debug'], extras))
         except KeyboardInterrupt:
             pass
-        fabric.api.env.print_cmds()
     elif arguments['stop']:
         res = fabric.api.execute(task.room_task, room, "stop")
         res.update(fabric.api.execute(task.stop_task))
-        fabric.api.env.print_cmds()
     elif arguments['clean']:
         res = fabric.api.execute(task.room_task, room, "clean")
         res.update(fabric.api.execute(task.clean_task))
-        fabric.api.env.print_cmds()
     elif arguments['rsync']:
         res = fabric.api.execute(task.room_task, room, "rsync")
         res.update(fabric.api.execute(fabric.api.env.rsync))
-        fabric.api.env.print_cmds()
+    elif arguments['fetch']:
+        timestr = datetime.datetime.now().strftime("%Y%m%d.%H%M%S")
+        fetch_dir = "fetched.{}".format(timestr)
+        files = arguments.get('<file>', [])
+        res = fabric.api.execute(task.room_task, room, "fetch")
+        res.update(fabric.api.execute(task.stop_task))
+        res.update(fabric.api.execute(task.fetch_task, fetch_dir, files))
+        # Try to store git info
+        try:
+            git_diff = subprocess.check_output(["git", "diff", "HEAD"])
+            with open(os.path.join(fetch_dir, "git.diff"), "w") as git_diff_file:
+                git_diff_file.write(git_diff)
+        except:
+            pass
+        try:
+            git_log = subprocess.check_output(["git", "log"])
+            with open(os.path.join(fetch_dir, "git.log"), "w") as git_log_file:
+                git_log_file.write(git_log)
+        except:
+            pass
+
+
     elif arguments['ls']:
         template_root = arguments["--template_home"] or default_obi_template_dir
         if os.path.exists(template_root):
@@ -195,14 +219,25 @@ def main():
             return res
         elif arguments['upgrade']:
             template_root = arguments["--template_home"] or default_obi_template_dir
-            template_path = os.path.join(template_root, arguments["<name>"])
-            res = subprocess.call(["git", "pull"], cwd=template_path)
-            print("Upgraded template at {}".format(template_path))
-            return res
+            template_name = arguments["<name>"]
+            template_path = os.path.join(template_root, template_name)
+            if os.path.exists(template_path):
+                res = subprocess.call(["git", "pull"], cwd=template_path)
+                print("Upgraded template at {}".format(template_path))
+                return res
+            else:
+                print("No template installed with name " + template_name)
+                return 1
         elif arguments['remove']:
             template_root = arguments["--template_home"] or default_obi_template_dir
-            template_path = os.path.join(template_root, arguments["<name>"])
-            return subprocess.call(["rm", "-rf", template_path])
+            template_name = arguments["<name>"]
+            template_path = os.path.join(template_root, template_name)
+            if os.path.exists(template_path):
+                return subprocess.call(["rm", "-rf", template_path])
+            else:
+                print("No template installed with name " + template_name)
+                return 1
+
     return 0
 
 if __name__ == '__main__':

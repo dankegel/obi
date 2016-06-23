@@ -12,11 +12,30 @@ import stat
 import yaml
 
 from fabric.api import env  # the global env variable
+from fabric.api import (local, run) # the global env variable
 from fabric.api import (task, parallel, runs_once) #decorators
+
 from fabric.utils import abort
 from fabric.contrib.project import rsync_project
 from fabric.contrib.files import exists
 import fabric.colors
+
+# Courtesy of https://github.com/pyinvoke/invoke/issues/324#issuecomment-215289564
+@task
+def dryrun():
+    """Show, but don't run fabric commands"""
+
+    global local, run
+    fabric.state.output['running'] = False
+
+    # Redefine the local and run functions to simply output the command
+    def local(command, capture=False, shell=None, running=None):
+        print("{}".format(command))
+
+    def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
+            warn_only=False, stdout=None, stderr=None, running=None, timeout=None, shell_escape=None,
+            capture_buffer_size=None):
+        print("ssh -t {}@{} \"{}\"".format(env.user, env.host_string, command))
 
 @task
 @runs_once
@@ -67,42 +86,8 @@ def room_task(room_name, task_name=None):
         env.cd = fabric.context_managers.lcd
         # Generate a shell script that duplicates the task
         task_name = task_name or env.tasks[-1]
-        task_sh_name = "obi-{0}-{1}.sh".format(task_name.replace(":", ""), room_name)
-        task_sh_file = os.path.join(env.project_dir, task_sh_name)
-        with open(task_sh_file, 'w') as f:
-            print("#!/usr/bin/env bash", file=f)
-            print("# Produced with obi!", file=f)
-            print("# brew tap Oblong/homebrew-tools", file=f)
-            print("# brew install obi", file=f)
-            print("set -e", file=f)
-            print("set -v\n", file=f)
-        # Make sure the script is executable
-        task_sh_st = os.stat(task_sh_file)
-        os.chmod(task_sh_file, task_sh_st.st_mode | stat.S_IEXEC)
-        def local_run(cmd):
-            """
-            Runs the command locally
-            Side effect: write the command to a shell script
-            """
-            with open(task_sh_file, 'a') as f:
-                print(cmd, file=f)
-            # Gracefully handle keyboard interrupts
-            try:
-                fabric.api.local(cmd)
-            except KeyboardInterrupt:
-                pass
-        env.run = local_run
+        env.run = local
         env.background_run = env.run
-        def print_shell_script():
-            """
-            Prints the commands written to the shell script
-            See local_run
-            """
-            print(fabric.colors.magenta("$ cat " + task_sh_file, bold=True))
-            with open(task_sh_file, 'r') as f:
-                for cmd in f.readlines():
-                    print(fabric.colors.green(cmd.rstrip(), bold=True))
-        env.print_cmds = print_shell_script
         env.relpath = os.path.relpath
         env.launch_format_str = "{0} {1}"
         env.debug_launch_format_str = "{0} {1} {2}"
@@ -116,12 +101,11 @@ def room_task(room_name, task_name=None):
                                                 "tmp",
                                                 env.local_user,
                                                 project_name))
-        env.run = fabric.api.run
+        env.run = run
         env.background_run = lambda cmd: env.run(cmd, pty=False)
         env.file_exists = fabric.contrib.files.exists
         env.rsync = rsync_task
         env.cd = fabric.context_managers.cd
-        env.print_cmds = lambda: None
         env.relpath = lambda p: p
         env.launch_format_str = "sh -c '(({0} nohup {1} > {2} 2> {2}) &)'"
         env.debug_launch_format_str = "tmux new -d -s {0} '{1}'".format(env.target_name, "{0} {1} {2}")
@@ -145,9 +129,11 @@ def build_task():
         # Arguments for the build step
         build_args = env.config.get("build-args", [])
         build_args = " ".join(build_args)
-        # Ensure the directory exists
-        env.run("mkdir -p {0}".format(env.build_dir))
-        env.run("cmake -H\"{0}\" -B\"{1}\" {2}".format(env.project_dir, env.build_dir, cmake_args))
+        # If the build_dir does not exist, then then we need to create it
+        # and configure cmake before building
+        if not env.file_exists(env.build_dir):
+            env.run("mkdir -p {0}".format(env.build_dir))
+            env.run("cmake -H\"{0}\" -B\"{1}\" {2}".format(env.project_dir, env.build_dir, cmake_args))
         env.run("cmake --build \"{0}\" -- {1}".format(env.build_dir, build_args))
 
 @task
@@ -167,11 +153,38 @@ def stop_task():
     obi stop
     """
     with env.cd(env.project_dir):
-        for cmd in env.config.get("on-stop-cmds", []):
+        # fall-back to on-stop-cmds for backwards compatibility
+        # TODO(jshrake): remove support for the amiguous on-stop-cmds key
+        for cmd in env.config.get("pre-stop-cmds", env.config.get("on-stop-cmds", [])):
             env.run(cmd)
-    default_stop = "pkill -KILL -f '[a-z/]+{0} .*' || true".format(env.target_name)
+    with env.cd(env.project_dir):
+        for cmd in env.config.get("local-pre-stop-cmds", []):
+            local(cmd)
+    default_stop = "pkill -SIGINT -f '[a-z/]+{0} .*' || true".format(env.target_name)
     stop_cmd = env.config.get("stop-cmd", default_stop)
     env.run(stop_cmd)
+    with env.cd(env.project_dir):
+        for cmd in env.config.get("post-stop-cmds", []):
+            env.run(cmd)
+    with env.cd(env.project_dir):
+        for cmd in env.config.get("local-post-stop-cmds", []):
+            local(cmd)
+
+@task
+@parallel
+def fetch_task(fetch_files_to_dir, files):
+    """
+    obi fetch
+    """
+    fetch_dir = fetch_files_to_dir + '/%(host)s/%(path)s'
+    files_to_fetch = files or env.config.get("fetch", [])
+    with env.cd(env.project_dir):
+        for f in files_to_fetch:
+            try:
+                fabric.operations.get(f, fetch_dir)
+            # dont fail when f doesn't exist on the remote machines
+            except:
+                continue
 
 @task
 @parallel
@@ -235,11 +248,27 @@ def rsync_task():
     Task wrapper around fabric's rsync_project
     """
     fabric.api.local(env.config.get("pre-rsync-cmd", ""))
+    """ NOTE(jshrake): local_dir must end in a trailing slash
+    From http://docs.fabfile.org/en/1.11/api/contrib/project.html
+    - If local_dir ends with a trailing slash, the files will be
+    dropped inside of remote_dir.
+    E.g. rsync_project("/home/username/project/", "foldername/")
+    will drop the contents of foldername inside of /home/username/project.
+    - If local_dir does not end with a trailing slash
+    (and this includes the default scenario, when local_dir is not
+    specified), remote_dir is effectively the "parent" directory, and
+    new directory named after local_dir will be created inside of it.
+    So rsync_project("/home/username", "foldername") would create
+    a new directory /home/username/foldername (if needed) and place the
+    files there.
+    """
+    env.run("mkdir -p {0}".format(env.project_dir))
     return fabric.contrib.project.rsync_project(
-        local_dir=env.local_project_dir,
-        remote_dir=parent_dir(env.project_dir),
+        local_dir=env.local_project_dir + "/",
+        remote_dir=env.project_dir,
         delete=True,
-        exclude=env.config.get("rsync-excludes", []))
+        exclude=env.config.get("rsync-excludes", []),
+        capture=True)
 
 def parent_dir(current_dir):
     """

@@ -7,9 +7,11 @@ Available tasks:
 build             Builds the project (optionally, on numerous machines)
 clean             Clean the build directory (optionally, on numerous machines)
 go                Build, stop, and run the project (optionally, on numerous machines)
-ls                List obi templates
 new               Generate project scaffolding based on a obi template
 stop              Stops the application (optionally, on numerous machines)
+rsync             Rsync your local project directory to remote machines
+fetch             Download remote files to your local project directory
+ls                List obi templates
 template install  Install an obi template
 template remove   Remove an installed obi template
 template upgrade  Upgrade an installed obi template
@@ -20,11 +22,12 @@ screen proteins, and set the names of pools that your program will use.
 
 Usage:
   obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
-  obi go [<room>] [--debug=<debugger>] [--] [<extras>...]
-  obi stop [<room>]
-  obi clean [<room>]
-  obi build [<room>]
-  obi rsync [<room>]
+  obi go [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
+  obi stop [<room>] [--dry-run]
+  obi clean [<room>] [--dry-run]
+  obi build [<room>] [--dry-run]
+  obi rsync <room> [--dry-run]
+  obi fetch <room> [<file>...] [--dry-run]
   obi ls [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
@@ -34,6 +37,7 @@ Usage:
 Options:
   -h --help               Show this screen.
   --version               Show version.
+  --dry-run               Optional: output the list of commands that the task runs.
   --g_speak_home=<path>   Optional: absolute path of g-speak dir to build against.
   --template_home=<path>  Optional: path containing installed obi templates.
   --debug=<debugger>      Optional: launches the application in a debugger.
