@@ -78,7 +78,8 @@ brew upgrade obi
 sudo apt-get install python-dev python-pip
 
 # Install
-
+# NOTE: You should make sure that ~/.local/bin is on your PATH if using the
+# --user flag.
 pip install --user git+https://github.com/Oblong/obi.git
 
 # Upgrading
