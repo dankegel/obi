@@ -120,7 +120,7 @@ Runs `git pull` in the appropriate repository.
 
 ```
 obi remove greenhouse
-obi remove gspeak
+etc.
 ```
 
 Removes the template.
@@ -141,7 +141,7 @@ If the `--g_speak_home` option is not specified, obi attempts to find a default 
 
 #### example
 ```bash
-obi new greenhouse app-name --g_speak_home=/opt/oblong/g-speak3.22
+obi new greenhouse app-name --g_speak_home=/opt/oblong/g-speak3.26
 ```
 
 ### obi ls
