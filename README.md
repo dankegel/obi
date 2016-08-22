@@ -94,7 +94,6 @@ Install templates from a git repository:
 ```
 obi template install git@gitlab.oblong.com:obi/greenhouse
 obi template install git@gitlab.oblong.com:obi/gspeak
-obi template install git@gitlab.oblong.com:obi/rad
 ```
 
 The install command clones the specified repo to
@@ -107,7 +106,6 @@ yourself!
 ```
 obi template upgrade greenhouse
 obi template upgrade gspeak
-obi template upgrade rad
 ```
 
 Runs `git pull` in the appropriate repository.
@@ -117,7 +115,6 @@ Runs `git pull` in the appropriate repository.
 ```
 obi remove greenhouse
 obi remove gspeak
-obi remove rad
 ```
 
 Removes the template.
