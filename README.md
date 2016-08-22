@@ -92,7 +92,13 @@ pip install --upgrade --user git+https://github.com/Oblong/obi.git
 
 Install templates from a git repository:
 ```
-obi template install git@gitlab.oblong.com:obi/greenhouse
+# a good batteries-included starting point project template
+obi template install git@github.com:Oblong/obi-greenhouse.git
+
+# a very basic C++ project template
+obi template install git@github.com:Oblong/obi-cpp.git
+
+# a gspeak project template (Oblong internal only)
 obi template install git@gitlab.oblong.com:obi/gspeak
 ```
 
@@ -105,7 +111,7 @@ yourself!
 
 ```
 obi template upgrade greenhouse
-obi template upgrade gspeak
+etc.
 ```
 
 Runs `git pull` in the appropriate repository.
