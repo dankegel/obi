@@ -21,7 +21,7 @@ setup(
     keywords=["g-speak", "greenhouse"],
     install_requires=[
         'docopt==0.6.2',
-        'fabric==1.10.2',
+        'fabric==1.10.3',
         'jinja2==2.8',
         'pyyaml==3.11'
     ],
