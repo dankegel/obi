@@ -75,7 +75,7 @@ brew upgrade obi
 ```bash
 # Install dependencies (if using system python)
 
-sudo apt-get install python-dev python-pip
+sudo apt-get install python-dev python-pip libffi-dev libssl-dev
 
 # Install
 # NOTE: You should make sure that ~/.local/bin is on your PATH if using the
