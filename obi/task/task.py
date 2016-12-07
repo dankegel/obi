@@ -143,9 +143,10 @@ def clean_task():
     """
     obi clean
     """
-    default_clean = "rm -rf {0} || true".format(env.build_dir)
-    clean_cmd = env.config.get("clean-cmd", default_clean)
-    env.run(clean_cmd)
+    with env.cd(env.project_dir):
+        default_clean = "rm -rf {0} || true".format(env.build_dir)
+        clean_cmd = env.config.get("clean-cmd", default_clean)
+        env.run(clean_cmd)
 
 @task
 @parallel
