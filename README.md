@@ -239,6 +239,15 @@ obi clean
 obi clean room
 ```
 
+## Branches in this repo
+
+We make release tarballs off of the HEAD of master (https://github.com/Oblong/homebrew-tools/blob/master/obi.rb#L4)
+
+`brew install obi --HEAD` installs from the HEAD of dev (https://github.com/Oblong/homebrew-tools/blob/master/obi.rb#L6)
+
+All new work should land on dev. We announce internally when pushing changes to dev, and ask that dev users update. After a few weeks, if all is well, we merge dev to master and tag a release.
+
+
 ## Editor tips
 
 ### emacs
