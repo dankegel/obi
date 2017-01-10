@@ -55,6 +55,8 @@ import fabric
 import docopt
 import datetime
 from . import task
+from distutils.version import StrictVersion
+import glob
 
 def mkdir_p(path):
     """
@@ -67,6 +69,14 @@ def mkdir_p(path):
         if exc.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else: raise
+
+def g_speak_version_key(x):
+    """
+    Extract a g-speak version from a g-speak home.
+    """
+    v = os.path.split(x)[1]
+    v = v.split('g-speak')[1]
+    return StrictVersion(v)
 
 def get_g_speak_home(arguments):
     """
@@ -85,14 +95,12 @@ def get_g_speak_home(arguments):
         g_speak_home = os.environ['G_SPEAK_HOME']
         set_by = "environment variable G_SPEAK_HOME"
     else:
-        path = os.path.join(os.path.sep, "opt", "oblong")
+        # Exclude directories like "g-speak-64-2" or "deps-64-11"
+        path = os.path.join(os.path.sep, "opt", "oblong", "g-speak?.*")
         try:
-            items = [os.path.join(path, item) for item in os.listdir(path) if "g-speak" in item]
+            items = [item for item in glob.glob(path) if os.path.isdir(item)]
             items = [item for item in items if os.path.isdir(item)]
-            items.sort()
-            # the last element will be the directory with the most recent
-            # version of g-speak
-            g_speak_home = items[-1]
+            g_speak_home = max(items, key=g_speak_version_key)
             set_by = "directory lookup"
         except (OSError, IndexError):
             print("Could not find the g_speak home directory in {}"
