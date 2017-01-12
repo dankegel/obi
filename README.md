@@ -11,7 +11,7 @@ new               Generate project scaffolding based on a obi template
 stop              Stops the application (optionally, on numerous machines)
 rsync             Rsync your local project directory to remote machines
 fetch             Download remote files to your local project directory
-ls                List obi templates
+template list     List obi templates
 template install  Install an obi template
 template remove   Remove an installed obi template
 template upgrade  Upgrade an installed obi template
@@ -28,7 +28,7 @@ Usage:
   obi build [<room>] [--dry-run]
   obi rsync <room> [--dry-run]
   obi fetch <room> [<file>...] [--dry-run]
-  obi ls [--template_home=<path>]
+  obi template list [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
   obi template upgrade <name> [--template_home=<path>]
@@ -129,7 +129,7 @@ Removes the template.
 
 `obi new <template> <name>` generates project scaffolding based on an installed template in your current working directory.
 
-`obi ls` returns a list of all available obi templates installed on this machine.
+`obi template list` returns a list of all available obi templates installed on this machine.
 
 #### options
 - `[--g_speak_home=<path>]`: Builds the project against the specified g-speak. Path must be an absolute path to the g-speak home directory.
@@ -141,13 +141,13 @@ If the `--g_speak_home` option is not specified, obi attempts to find a default 
 obi new greenhouse app-name --g_speak_home=/opt/oblong/g-speak3.22
 ```
 
-### obi ls
+### obi template list
 ---
-`obi ls` Returns a list of installed obi templates available for use with the `new` task.
+`obi template list` Returns a list of installed obi templates available for use with the `new` task.
 
 #### example
 ```bash
-obi ls
+obi template list
 ```
 
 ### obi go [room-name]

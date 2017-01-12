@@ -11,7 +11,7 @@ new               Generate project scaffolding based on a obi template
 stop              Stops the application (optionally, on numerous machines)
 rsync             Rsync your local project directory to remote machines
 fetch             Download remote files to your local project directory
-ls                List obi templates
+template list     List obi templates
 template install  Install an obi template
 template remove   Remove an installed obi template
 template upgrade  Upgrade an installed obi template
@@ -28,7 +28,7 @@ Usage:
   obi build [<room>] [--dry-run]
   obi rsync <room> [--dry-run]
   obi fetch <room> [<file>...] [--dry-run]
-  obi ls [--template_home=<path>]
+  obi template list [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
   obi template upgrade <name> [--template_home=<path>]
@@ -207,17 +207,15 @@ def main():
                 git_log_file.write(git_log)
         except:
             pass
-
-
-    elif arguments['ls']:
-        template_root = arguments["--template_home"] or default_obi_template_dir
-        if os.path.exists(template_root):
-            print("Installed templates:\n{0}".format(
-                "\n".join([d for d in os.listdir(template_root)])))
-        else:
-            print("No templates installed at " + template_root)
     elif arguments['template']:
-        if arguments['install']:
+        if arguments['list']:
+            template_root = arguments["--template_home"] or default_obi_template_dir
+            if os.path.exists(template_root):
+                print("Installed templates:\n{0}".format(
+                    "\n".join([d for d in os.listdir(template_root)])))
+            else:
+                print("No templates installed at " + template_root)
+        elif arguments['install']:
             template_root = arguments["--template_home"] or default_obi_template_dir
             mkdir_p(template_root)
             giturl = arguments['<giturl>']
