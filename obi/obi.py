@@ -222,6 +222,8 @@ def main():
             mkdir_p(template_root)
             giturl = arguments['<giturl>']
             name = arguments['<name>'] or os.path.basename(giturl)
+            if name.endswith(".git"):
+                name = name[:-4]
             res = subprocess.call(["git", "clone", giturl, name], cwd=template_root)
             print("Installed template {} to {}".format(name, template_root))
             return res
