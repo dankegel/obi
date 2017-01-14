@@ -121,8 +121,9 @@ def build_task():
     """
     with env.cd(env.project_dir):
         user_specified_build = env.config.get("build-cmd", None)
-        if user_specified_build:
-            env.run(user_specified_build)
+        if env.config.has_key("build-cmd"):
+            if user_specified_build:
+                env.run(user_specified_build)
         else:
             # Arguments for the cmake step
             cmake_args = env.config.get("cmake-args", [])
@@ -141,9 +142,13 @@ def clean_task():
     obi clean
     """
     with env.cd(env.project_dir):
-        default_clean = "rm -rf {0} || true".format(env.build_dir)
-        clean_cmd = env.config.get("clean-cmd", default_clean)
-        env.run(clean_cmd)
+        user_specified_clean = env.config.get("clean-cmd", None)
+        if env.config.has_key("clean-cmd"):
+            if user_specified_clean:
+                env.run(user_specified_clean)
+        else:
+            clean_cmd = "rm -rf {0} || true".format(env.build_dir)
+            env.run(clean_cmd)
 
 @task
 @parallel
