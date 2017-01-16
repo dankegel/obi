@@ -140,6 +140,10 @@ def main():
     if arguments['new']:
         template_root = arguments["--template_home"] or default_obi_template_dir
         project_name = arguments['<name>']
+        allowed_name_regex = "^[a-zA-Z][a-zA-Z0-9]*$"
+        if not re.match(allowed_name_regex, project_name):
+            print("Name must match {0} but you entered '{1}'".format(allowed_name_regex, project_name))
+            return 1
         template_name = arguments['<template>']
         template_path = os.path.join(template_root, template_name, template_name + ".py")
         if not os.path.exists(template_path):
