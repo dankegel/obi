@@ -267,7 +267,7 @@ def rsync_task():
         remote_dir=env.project_dir,
         delete=True,
         exclude=env.config.get("rsync-excludes", []),
-        extra_opts=env.config.get("rsync-extra-opts", "-K"),
+        extra_opts=env.config.get("rsync-extra-opts", "--copy-links --partial"),
         capture=True)
 
 def parent_dir(current_dir):
