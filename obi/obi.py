@@ -154,7 +154,7 @@ def main():
             return 1
         template = imp.load_source(template_name, template_path)
         if not hasattr(template, 'obi_new'):
-            print ("Error: template {0} does not expose a funciton named obi_new".format(template_name))
+            print ("Error: template {0} does not expose a function named obi_new".format(template_name))
             return 1
         project_path = os.path.join(os.getcwd(), project_name)
         g_speak_home = get_g_speak_home(arguments)
