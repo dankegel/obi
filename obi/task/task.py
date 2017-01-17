@@ -80,7 +80,7 @@ def room_task(room_name, task_name=None):
     if room.get("is-local", room_name == "localhost" or not room.get("hosts", [])):
         env.hosts = ['localhost']
         env.use_ssh_config = False
-        env.project_dir = os.path.dirname(project_config)
+        env.project_dir = env.local_project_dir
         env.file_exists = os.path.exists
         env.rsync = lambda: None # Don't rsync when running locally -- noop
         env.cd = fabric.context_managers.lcd
@@ -109,9 +109,7 @@ def room_task(room_name, task_name=None):
         env.relpath = lambda p: p
         env.launch_format_str = "sh -c '(({0} nohup {1} > {2} 2> {2}) &)'"
         env.debug_launch_format_str = "tmux new -d -s {0} '{1}'".format(env.target_name, "{0} {1} {2}")
-    env.build_dir = env.relpath(
-        os.path.join(env.project_dir,
-                     env.config.get("build-dir", "build")))
+    env.build_dir = os.path.abspath(env.relpath(os.path.join(env.project_dir, env.config.get("build-dir", "build"))))
 
 @task
 @parallel
@@ -211,7 +209,7 @@ def launch_task(debugger, extras):
     launch_args = env.config.get("launch-args", [])
 
     formatted_launch = "{0} {1} {2}".format(
-        env.relpath(target), # {0}
+        target, # {0}
         " ".join(extras), # {1}
         " ".join(launch_args) # {2}
     )
