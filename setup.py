@@ -33,5 +33,9 @@ setup(
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
         "Topic :: Software Development :: Libraries :: Python Modules",
-    ]
+    ],
+    data_files=[
+        ('man/man1', ['obi.1']),
+    ],
+    package_data={'': ['README.md']}
 )
