@@ -1,0 +1,81 @@
+.Dd January 16, 2017
+.Dt OBI 1
+.Os
+.Sh NAME
+.Nm obi
+.Nd 
+.Sh SYNOPSIS
+.Nm obi
+.Ar new
+.Ar <template>
+.Ar <name>
+.Op Fl -template_home
+.Op Fl -g_speak_home
+.Nm obi
+.Ar go
+.Op Ar <room>
+.Op Fl -debug
+.Op Fl -dry-run
+.Op Ar --
+.Op Ar <extras> Ar ...
+.Nm obi
+.Ar stop
+.Op Ar <room>
+.Op Fl -dry-run
+.Nm obi
+.Ar clean
+.Op Ar <room>
+.Op Fl -dry-run
+.Nm obi
+.Ar build
+.Op Ar <room>
+.Op Fl -dry-run
+.Nm obi
+.Ar rsync
+.Ar <room>
+.Op Fl -dry-run
+.Nm obi
+.Ar fetch
+.Ar <room>
+.Op Ar <file> Ar ...
+.Op Fl -dry-run
+.Nm obi
+.Ar template
+.Ar list
+.Op Fl -template_home
+.Nm obi
+.Ar template
+.Ar install
+.Ar <giturl>
+.Op Ar <name>
+.Op Fl -template_home
+.Nm obi
+.Ar template
+.Ar remove
+.Ar <name>
+.Op Fl -template_home
+.Nm obi
+.Ar template
+.Ar upgrade
+.Ar <name>
+.Op Fl -template_home
+.Pq
+.Nm obi
+.Fl -help | Fl -help | Fl -version
+.Sh DESCRIPTION
+
+.Sh OPTIONS
+.Bl -tag -width Ds
+.It Fl h , Fl -help
+Show this screen.
+.It Fl -version
+Show version.
+.It Fl -dry-run
+Optional: output the list of commands that the task runs.
+.It Fl -g_speak_home Ar <path>
+Optional: absolute path of g-speak dir to build against.
+.It Fl -template_home Ar <path>
+Optional: path containing installed obi templates.
+.It Fl -debug Ar <debugger>
+Optional: launches the application in a debugger.
+.El
