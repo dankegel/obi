@@ -162,7 +162,7 @@ def stop_task():
     with env.cd(env.project_dir):
         for cmd in env.config.get("local-pre-stop-cmds", []):
             local(cmd)
-    default_stop = "pkill -SIGINT -f '[a-z/]+{0} .*' || true".format(env.target_name)
+    default_stop = "pkill -SIGTERM -f '[a-z/]+{0} .*' || true".format(env.target_name)
     stop_cmd = env.config.get("stop-cmd", default_stop)
     env.run(stop_cmd)
     with env.cd(env.project_dir):
