@@ -140,6 +140,10 @@ def main():
     if arguments['new']:
         template_root = arguments["--template_home"] or default_obi_template_dir
         project_name = arguments['<name>']
+        allowed_name_regex = "^[a-zA-Z][a-zA-Z0-9]*$"
+        if not re.match(allowed_name_regex, project_name):
+            print("Name must match {0} but you entered '{1}'".format(allowed_name_regex, project_name))
+            return 1
         template_name = arguments['<template>']
         template_path = os.path.join(template_root, template_name, template_name + ".py")
         if not os.path.exists(template_path):
@@ -150,7 +154,7 @@ def main():
             return 1
         template = imp.load_source(template_name, template_path)
         if not hasattr(template, 'obi_new'):
-            print ("Error: template {0} does not expose a funciton named obi_new".format(template_name))
+            print ("Error: template {0} does not expose a function named obi_new".format(template_name))
             return 1
         project_path = os.path.join(os.getcwd(), project_name)
         g_speak_home = get_g_speak_home(arguments)
