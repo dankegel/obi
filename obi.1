@@ -1,16 +1,10 @@
-.Dd January 16, 2017
+.Dd January 20, 2017
 .Dt OBI 1
 .Os
 .Sh NAME
 .Nm obi
 .Nd 
 .Sh SYNOPSIS
-.Nm obi
-.Ar new
-.Ar <template>
-.Ar <name>
-.Op Fl -template_home
-.Op Fl -g_speak_home
 .Nm obi
 .Ar go
 .Op Ar <room>
@@ -23,11 +17,11 @@
 .Op Ar <room>
 .Op Fl -dry-run
 .Nm obi
-.Ar clean
+.Ar build
 .Op Ar <room>
 .Op Fl -dry-run
 .Nm obi
-.Ar build
+.Ar clean
 .Op Ar <room>
 .Op Fl -dry-run
 .Nm obi
@@ -39,6 +33,12 @@
 .Ar <room>
 .Op Ar <file> Ar ...
 .Op Fl -dry-run
+.Nm obi
+.Ar new
+.Ar <template>
+.Ar <name>
+.Op Fl -template_home
+.Op Fl -g_speak_home
 .Nm obi
 .Ar template
 .Ar list

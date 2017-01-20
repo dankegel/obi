@@ -1,33 +1,36 @@
 #!/usr/bin/env python
 """
-obi is a command-line tool for working with gspeak projects.
+obi is a command-line tool for developing g-speaky applications.
 
 Available tasks:
 
+go                Build, stop, and run the project (optionally, on numerous machines)
+                  defaults to deploying to /tmp/yourusername/projectname
+stop              Stops the application (optionally, on numerous machines)
 build             Builds the project (optionally, on numerous machines)
 clean             Clean the build directory (optionally, on numerous machines)
-go                Build, stop, and run the project (optionally, on numerous machines)
-new               Generate project scaffolding based on a obi template
-stop              Stops the application (optionally, on numerous machines)
 rsync             Rsync your local project directory to remote machines
 fetch             Download remote files to your local project directory
+
+new               Generate a new project, scaffolded from an obi template
 template list     List obi templates
 template install  Install an obi template
 template remove   Remove an installed obi template
 template upgrade  Upgrade an installed obi template
 
 Edit project.yaml (in your project folder) to configure sets of machines for
-go/stop, set arguments for building and launching the program, choose feld &
-screen proteins, and set the names of pools that your program will use.
+go/stop, set arguments for building and launching the program, and choose feld &
+screen proteins. By default, running your application in a room will deploy
+project files to /tmp/yourusername/project-name/ on the machines of that room.
 
 Usage:
-  obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
   obi go [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
   obi stop [<room>] [--dry-run]
-  obi clean [<room>] [--dry-run]
   obi build [<room>] [--dry-run]
+  obi clean [<room>] [--dry-run]
   obi rsync <room> [--dry-run]
   obi fetch <room> [<file>...] [--dry-run]
+  obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
   obi template list [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
