@@ -80,7 +80,7 @@ def room_task(room_name, task_name=None):
     if room.get("is-local", room_name == "localhost" or not room.get("hosts", [])):
         env.hosts = ['localhost']
         env.use_ssh_config = False
-        env.project_dir = os.path.dirname(project_config)
+        env.project_dir = env.local_project_dir
         env.file_exists = os.path.exists
         env.rsync = lambda: None # Don't rsync when running locally -- noop
         env.cd = fabric.context_managers.lcd
@@ -109,9 +109,7 @@ def room_task(room_name, task_name=None):
         env.relpath = lambda p: p
         env.launch_format_str = "sh -c '(({0} nohup {1} > {2} 2> {2}) &)'"
         env.debug_launch_format_str = "tmux new -d -s {0} '{1}'".format(env.target_name, "{0} {1} {2}")
-    env.build_dir = env.relpath(
-        os.path.join(env.project_dir,
-                     env.config.get("build-dir", "build")))
+    env.build_dir = os.path.abspath(env.relpath(os.path.join(env.project_dir, env.config.get("build-dir", "build"))))
 
 @task
 @parallel
@@ -119,22 +117,21 @@ def build_task():
     """
     obi build
     """
-    user_specified_build = env.config.get("build-cmd", None)
-    if user_specified_build:
-        env.run(user_specified_build)
-    else:
-        # Arguments for the cmake step
-        cmake_args = env.config.get("cmake-args", [])
-        cmake_args = " ".join(cmake_args)
-        # Arguments for the build step
-        build_args = env.config.get("build-args", [])
-        build_args = " ".join(build_args)
-        # If the build_dir does not exist, then then we need to create it
-        # and configure cmake before building
-        if not env.file_exists(env.build_dir):
+    with env.cd(env.project_dir):
+        user_specified_build = env.config.get("build-cmd", None)
+        if env.config.has_key("build-cmd"):
+            if user_specified_build:
+                env.run(user_specified_build)
+        else:
+            # Arguments for the cmake step
+            cmake_args = env.config.get("cmake-args", [])
+            cmake_args = " ".join(cmake_args)
+            # Arguments for the build step
+            build_args = env.config.get("build-args", [])
+            build_args = " ".join(build_args)
             env.run("mkdir -p {0}".format(env.build_dir))
             env.run("cmake -H\"{0}\" -B\"{1}\" {2}".format(env.project_dir, env.build_dir, cmake_args))
-        env.run("cmake --build \"{0}\" -- {1}".format(env.build_dir, build_args))
+            env.run("cmake --build \"{0}\" -- {1}".format(env.build_dir, build_args))
 
 @task
 @parallel
@@ -142,9 +139,14 @@ def clean_task():
     """
     obi clean
     """
-    default_clean = "rm -rf {0} || true".format(env.build_dir)
-    clean_cmd = env.config.get("clean-cmd", default_clean)
-    env.run(clean_cmd)
+    with env.cd(env.project_dir):
+        user_specified_clean = env.config.get("clean-cmd", None)
+        if env.config.has_key("clean-cmd"):
+            if user_specified_clean:
+                env.run(user_specified_clean)
+        else:
+            clean_cmd = "rm -rf {0} || true".format(env.build_dir)
+            env.run(clean_cmd)
 
 @task
 @parallel
@@ -160,7 +162,7 @@ def stop_task():
     with env.cd(env.project_dir):
         for cmd in env.config.get("local-pre-stop-cmds", []):
             local(cmd)
-    default_stop = "pkill -SIGINT -f '[a-z/]+{0} .*' || true".format(env.target_name)
+    default_stop = "pkill -SIGTERM -f '[a-z/]+{0} .*' || true".format(env.target_name)
     stop_cmd = env.config.get("stop-cmd", default_stop)
     env.run(stop_cmd)
     with env.cd(env.project_dir):
@@ -212,7 +214,7 @@ def launch_task(debugger, extras):
     launch_args = env.config.get("launch-args", [])
 
     formatted_launch = "{0} {1} {2}".format(
-        env.relpath(target), # {0}
+        target, # {0}
         " ".join(extras), # {1}
         " ".join(launch_args) # {2}
     )
@@ -268,6 +270,7 @@ def rsync_task():
         remote_dir=env.project_dir,
         delete=True,
         exclude=env.config.get("rsync-excludes", []),
+        extra_opts=env.config.get("rsync-extra-opts", "--copy-links --partial"),
         capture=True)
 
 def parent_dir(current_dir):

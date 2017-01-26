@@ -1,34 +1,37 @@
 #!/usr/bin/env python
 """
-obi is a command-line tool for working with gspeak projects.
+obi is a command-line tool for developing g-speaky applications.
 
 Available tasks:
 
+go                Build, stop, and run the project (optionally, on numerous machines)
+                  defaults to deploying to /tmp/yourusername/projectname
+stop              Stops the application (optionally, on numerous machines)
 build             Builds the project (optionally, on numerous machines)
 clean             Clean the build directory (optionally, on numerous machines)
-go                Build, stop, and run the project (optionally, on numerous machines)
-new               Generate project scaffolding based on a obi template
-stop              Stops the application (optionally, on numerous machines)
 rsync             Rsync your local project directory to remote machines
 fetch             Download remote files to your local project directory
-ls                List obi templates
+
+new               Generate a new project, scaffolded from an obi template
+template list     List obi templates
 template install  Install an obi template
 template remove   Remove an installed obi template
 template upgrade  Upgrade an installed obi template
 
 Edit project.yaml (in your project folder) to configure sets of machines for
-go/stop, set arguments for building and launching the program, choose feld &
-screen proteins, and set the names of pools that your program will use.
+go/stop, set arguments for building and launching the program, and choose feld &
+screen proteins. By default, running your application in a room will deploy
+project files to /tmp/yourusername/project-name/ on the machines of that room.
 
 Usage:
-  obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
   obi go [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
   obi stop [<room>] [--dry-run]
-  obi clean [<room>] [--dry-run]
   obi build [<room>] [--dry-run]
+  obi clean [<room>] [--dry-run]
   obi rsync <room> [--dry-run]
   obi fetch <room> [<file>...] [--dry-run]
-  obi ls [--template_home=<path>]
+  obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
+  obi template list [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
   obi template upgrade <name> [--template_home=<path>]
@@ -55,6 +58,8 @@ import fabric
 import docopt
 import datetime
 from . import task
+from distutils.version import StrictVersion
+import glob
 
 def mkdir_p(path):
     """
@@ -67,6 +72,14 @@ def mkdir_p(path):
         if exc.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else: raise
+
+def g_speak_version_key(x):
+    """
+    Extract a g-speak version from a g-speak home.
+    """
+    v = os.path.split(x)[1]
+    v = v.split('g-speak')[1]
+    return StrictVersion(v)
 
 def get_g_speak_home(arguments):
     """
@@ -85,14 +98,12 @@ def get_g_speak_home(arguments):
         g_speak_home = os.environ['G_SPEAK_HOME']
         set_by = "environment variable G_SPEAK_HOME"
     else:
-        path = os.path.join(os.path.sep, "opt", "oblong")
+        # Exclude directories like "g-speak-64-2" or "deps-64-11"
+        path = os.path.join(os.path.sep, "opt", "oblong", "g-speak?.*")
         try:
-            items = [os.path.join(path, item) for item in os.listdir(path) if "g-speak" in item]
+            items = [item for item in glob.glob(path) if os.path.isdir(item)]
             items = [item for item in items if os.path.isdir(item)]
-            items.sort()
-            # the last element will be the directory with the most recent
-            # version of g-speak
-            g_speak_home = items[-1]
+            g_speak_home = max(items, key=g_speak_version_key)
             set_by = "directory lookup"
         except (OSError, IndexError):
             print("Could not find the g_speak home directory in {}"
@@ -132,6 +143,10 @@ def main():
     if arguments['new']:
         template_root = arguments["--template_home"] or default_obi_template_dir
         project_name = arguments['<name>']
+        allowed_name_regex = "^[a-zA-Z][a-zA-Z0-9_]*$"
+        if not re.match(allowed_name_regex, project_name):
+            print("Name must match {0} but you entered '{1}'".format(allowed_name_regex, project_name))
+            return 1
         template_name = arguments['<template>']
         template_path = os.path.join(template_root, template_name, template_name + ".py")
         if not os.path.exists(template_path):
@@ -142,7 +157,7 @@ def main():
             return 1
         template = imp.load_source(template_name, template_path)
         if not hasattr(template, 'obi_new'):
-            print ("Error: template {0} does not expose a funciton named obi_new".format(template_name))
+            print ("Error: template {0} does not expose a function named obi_new".format(template_name))
             return 1
         project_path = os.path.join(os.getcwd(), project_name)
         g_speak_home = get_g_speak_home(arguments)
@@ -199,21 +214,21 @@ def main():
                 git_log_file.write(git_log)
         except:
             pass
-
-
-    elif arguments['ls']:
-        template_root = arguments["--template_home"] or default_obi_template_dir
-        if os.path.exists(template_root):
-            print("Installed templates:\n{0}".format(
-                "\n".join([d for d in os.listdir(template_root)])))
-        else:
-            print("No templates installed at " + template_root)
     elif arguments['template']:
-        if arguments['install']:
+        if arguments['list']:
+            template_root = arguments["--template_home"] or default_obi_template_dir
+            if os.path.exists(template_root):
+                print("Installed templates:\n{0}".format(
+                    "\n".join([d for d in os.listdir(template_root)])))
+            else:
+                print("No templates installed at " + template_root)
+        elif arguments['install']:
             template_root = arguments["--template_home"] or default_obi_template_dir
             mkdir_p(template_root)
             giturl = arguments['<giturl>']
             name = arguments['<name>'] or os.path.basename(giturl)
+            if name.endswith(".git"):
+                name = name[:-4]
             res = subprocess.call(["git", "clone", giturl, name], cwd=template_root)
             print("Installed template {} to {}".format(name, template_root))
             return res

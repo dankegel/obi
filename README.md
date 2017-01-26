@@ -1,34 +1,37 @@
 # obi
 ```
-obi is a command-line tool for working with gspeak projects.
+obi is a command-line tool for developing g-speaky applications.
 
 Available tasks:
 
+go                Build, stop, and run the project (optionally, on numerous machines)
+                  defaults to deploying to /tmp/yourusername/projectname
+stop              Stops the application (optionally, on numerous machines)
 build             Builds the project (optionally, on numerous machines)
 clean             Clean the build directory (optionally, on numerous machines)
-go                Build, stop, and run the project (optionally, on numerous machines)
-new               Generate project scaffolding based on a obi template
-stop              Stops the application (optionally, on numerous machines)
 rsync             Rsync your local project directory to remote machines
 fetch             Download remote files to your local project directory
-ls                List obi templates
+
+new               Generate a new project, scaffolded from an obi template
+template list     List obi templates
 template install  Install an obi template
 template remove   Remove an installed obi template
 template upgrade  Upgrade an installed obi template
 
 Edit project.yaml (in your project folder) to configure sets of machines for
-go/stop, set arguments for building and launching the program, choose feld &
-screen proteins, and set the names of pools that your program will use.
+go/stop, set arguments for building and launching the program, and choose feld &
+screen proteins. By default, running your application in a room will deploy
+project files to /tmp/yourusername/project-name/ on the machines of that room.
 
 Usage:
-  obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
   obi go [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
   obi stop [<room>] [--dry-run]
-  obi clean [<room>] [--dry-run]
   obi build [<room>] [--dry-run]
+  obi clean [<room>] [--dry-run]
   obi rsync <room> [--dry-run]
   obi fetch <room> [<file>...] [--dry-run]
-  obi ls [--template_home=<path>]
+  obi new <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
+  obi template list [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
   obi template upgrade <name> [--template_home=<path>]
@@ -52,9 +55,8 @@ Options:
 
 ## Install
 
-### Mac
+### Mac (via Homebrew)
 
-#### Homebrew
 ```bash
 # Install homebrew
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -70,11 +72,10 @@ brew update
 brew upgrade obi
 ```
 
-### Ubuntu
+### Ubuntu (via pip)
 
 ```bash
 # Install dependencies (if using system python)
-
 sudo apt-get install python-dev python-pip libffi-dev libssl-dev
 
 # Install
@@ -83,7 +84,6 @@ sudo apt-get install python-dev python-pip libffi-dev libssl-dev
 pip install --user git+https://github.com/Oblong/obi.git
 
 # Upgrading
-
 pip install --upgrade --user git+https://github.com/Oblong/obi.git
 ```
 ## Templates
@@ -91,7 +91,7 @@ pip install --upgrade --user git+https://github.com/Oblong/obi.git
 ### Installing
 
 Install templates from a git repository:
-```
+```bash
 # a good batteries-included starting point project template
 obi template install git@github.com:Oblong/obi-greenhouse.git greenhouse
 
@@ -109,30 +109,38 @@ yourself!
 
 ### Upgrading
 
-```
+```bash
+obi template upgrade obi-cpp
 obi template upgrade greenhouse
-etc.
+obi template upgrade growroom
 ```
 
 Runs `git pull` in the appropriate repository.
 
 ### Removing
 
-```
-obi remove greenhouse
-etc.
+```bash
+obi template remove obi-cpp
+obi template remove greenhouse
+obi template remove growroom
 ```
 
 Removes the template.
 
 ## Tasks
 
+### obi template list
+---
+`obi template list` Returns a list of installed obi templates available for use with the `new` task.
+
+#### example
+```bash
+obi template list
+```
+
 ### obi new [template] [name]
 ---
-
-`obi new <template> <name>` generates project scaffolding based on an installed template in your current working directory.
-
-`obi ls` returns a list of all available obi templates installed on this machine.
+`obi new <template> <name>` generates a new project in your current working directory, scaffolded from the chosen template.
 
 #### options
 - `[--g_speak_home=<path>]`: Builds the project against the specified g-speak. Path must be an absolute path to the g-speak home directory.
@@ -144,25 +152,17 @@ If the `--g_speak_home` option is not specified, obi attempts to find a default 
 obi new greenhouse app-name --g_speak_home=/opt/oblong/g-speak3.26
 ```
 
-### obi ls
----
-`obi ls` Returns a list of installed obi templates available for use with the `new` task.
-
-#### example
-```bash
-obi ls
-```
-
 ### obi go [room-name]
 ---
-`obi go [room-name]` builds and runs the application. If `<room-name>` is not specified, then the application is built and ran on the local machine.
+`obi go [room-name]` builds and runs the application on the machines belonging to the named room.
+If `<room-name>` is not specified, then the application is built and ran on the local machine.
 
 #### options
 - `[--debug=<debugger>]`: Specify a toolname to launch the application. This is useful for launching the application with debuggers or profilers:
 ```bash
 obi go --debug="lldb --"
-obi go --debug="strace --" roomname
-obi go --debug="gdb -ex run --args" roomname
+obi go roomname --debug="strace --"
+obi go roomname --debug="gdb -ex run --args"
 ```
 
 Users can specify special names debuggers in the `project.yaml`
@@ -178,13 +178,14 @@ debuggers:
 
 And use them like so:
 ```bash
-obi go --debug=gdb roomname
+obi go --debug=lldb
+obi go roomname --debug=gdb
 ```
 
 When using `--debug` with a remote set of machines, the application is launched in a tmux session with a name matching the target name. This allows one to ssh into one of the machines, attach to the tmux session and poke around:
 
 ```bash
-obi go --debug=gdb roomname
+obi go roomname --debug=gdb
 ssh -t user@host-in-roomname tmux attach -t targetname
 ```
 
@@ -200,7 +201,7 @@ obi go room
 # Launch the application with lldb
 obi go --debug="lldb --"
 # Launch the application with apitrace in a remote room
-obi go --debug="apitrace trace" room
+obi go room --debug="apitrace trace"
 ```
 
 ### obi stop [room-name]
@@ -229,7 +230,7 @@ obi build room
 
 ### obi clean [room-name]
 ---
-`obi clean [<room-name>]` cleans the build directory. If `<room-name>` is not specified, then the build directory on the local machine is cleaned.
+`obi clean [<room-name>]` cleans (deletes) the build directory. If `<room-name>` is not specified, then the build directory on the local machine is cleaned.
 
 #### example
 ```bash
