@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project does not use semver.
 
 ## [Unreleased]
+
+## [3.2.0] - 2016-01-26
 ### Added
 - Add changelog
 - Add new property, `rsync-extra-opts`, in project.yaml to specify rsync arguments for `obi rsync`

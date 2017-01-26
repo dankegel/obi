@@ -11,7 +11,7 @@ setup(
         'console_scripts': ['obi=obi.obi:main']
     },
     include_package_data=True,
-    version="3.1.0",
+    version="3.2.0",
     description="g-speak project generator",
     long_description=open('README.md', 'rt').read(),
     author="Justin Shrake",
