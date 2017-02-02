@@ -291,7 +291,7 @@ def load_project_config(config_path):
                 abort("Error: problem loading " + project_config_file)
             return config
     except Exception as e:
-        abort("Cannot load project.yaml file at {0}\nException: {1}".format(config_path, e.message))
+        abort("Cannot load project.yaml file at {0}\nException: {1}".format(config_path, e))
 
 def project_yaml():
     """
