@@ -235,6 +235,22 @@ obi clean
 obi clean room
 ```
 
+## SSH tips
+
+obi depends on having passwordless SSH access to remote hosts. If you're running
+on a mac and having SSH troubles, make sure your SSH keys are loaded into your
+key agent. On mac, you can add this to your `~/.ssh/config`:
+```
+Host *
+  UseKeychain yes
+  AddKeysToAgent yes
+```
+Alternatively, you can add this script snippet to your shell startup:
+```
+eval "$(ssh-agent -s)"
+ssh-add -K ~/.ssh/id_rsa
+```
+
 ## Editor tips
 
 ### emacs
