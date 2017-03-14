@@ -25,7 +25,7 @@ project files to /tmp/yourusername/project-name/ on the machines of that room.
 
 Usage:
   obi go [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
-  obi stop [<room>] [--dry-run]
+  obi stop [<room>] [-f|--force] [--dry-run]
   obi build [<room>] [--dry-run]
   obi clean [<room>] [--dry-run]
   obi rsync <room> [--dry-run]
@@ -201,7 +201,8 @@ obi go room --debug="apitrace trace"
 
 ### obi stop [room-name]
 ---
-`obi stop [<room-name>]` stops the application. If `<room-name>` is not specified, then the application is stopped on the local machine.
+`obi stop [<room-name>]` stops the application. If `<room-name>` is not specified, then the application is stopped on the local machine. The `[-f|--force]` option
+will send a stronger message, such as SIGKILL.
 
 #### example
 ```bash
@@ -209,6 +210,8 @@ obi go room --debug="apitrace trace"
 obi stop
 # Stop the application on the host machines listed under the room named room
 obi stop room
+# Forcefully stop the application on remote hosts for the room named room
+obi stop room -f
 ```
 
 ### obi build [room-name]
