@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project does not use semver.
 
 ## [Unreleased]
+### Added
+- Add logging of commands to systemd journal on remote machines
 
 ## [3.2.0] - 2016-01-26
 ### Added
