@@ -18,6 +18,8 @@ template install  Install an obi template
 template remove   Remove an installed obi template
 template upgrade  Upgrade an installed obi template
 
+room list         List available rooms
+
 Edit project.yaml (in your project folder) to configure sets of machines for
 go/stop, set arguments for building and launching the program, and choose feld &
 screen proteins. By default, running your application in a room will deploy
@@ -35,6 +37,7 @@ Usage:
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
   obi template upgrade <name> [--template_home=<path>]
+  obi room list
   obi -h | --help | --version
 
 Options:
@@ -252,7 +255,12 @@ def main():
             else:
                 print("No template installed with name " + template_name)
                 return 1
-
+    elif arguments['room']:
+        if arguments['list']:
+            # converts project.yaml into Dict
+            config = task.load_project_config(task.project_yaml())
+            for room in sorted(config.get("rooms", {})):
+                print(room)
     return 0
 
 if __name__ == '__main__':

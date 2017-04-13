@@ -201,38 +201,7 @@ _obi_installed_templates ()
 
 _obi_roomnames()
 {
-  python - <<EOF
-import os
-import yaml
-def parent_dir(current_dir):
-    return os.path.abspath(os.path.join(current_dir, os.pardir))
-
-def load_project_config(config_path):
-    try:
-        with open(config_path) as config_file:
-            config = yaml.load(config_file)
-            if not config:
-                abort("Error: problem loading " + project_config_file)
-            return config
-    except Exception as e:
-        abort("Cannot load project.yaml file at {0}\nException: {1}".format(config_path, e))
-
-def project_yaml():
-    current = os.getcwd()
-    parent = parent_dir(current)
-    while current != parent:
-        test_file = os.path.join(current, "project.yaml")
-        if os.path.exists(test_file):
-            return os.path.abspath(test_file)
-        else:
-            current = parent
-            parent = parent_dir(current)
-    abort("Could not find the project.yaml file in {0} or any parent directories".format(os.getcwd()))
-
-projectyaml = load_project_config(project_yaml())
-for k in sorted(projectyaml['rooms'].keys()) :
-  print k
-EOF
+  echo $(obi room list)
 }
 
 complete -F _obi obi
