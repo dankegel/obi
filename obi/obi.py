@@ -25,7 +25,7 @@ project files to /tmp/yourusername/project-name/ on the machines of that room.
 
 Usage:
   obi go [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
-  obi stop [<room>] [--dry-run]
+  obi stop [<room>] [-f|--force] [--dry-run]
   obi build [<room>] [--dry-run]
   obi clean [<room>] [--dry-run]
   obi rsync <room> [--dry-run]
@@ -128,6 +128,7 @@ def main():
     if sys.argv[1:] == ["wan"]:
         return subprocess.call(["telnet", "towel.blinkenlights.nl"])
 
+
     # defaults for the template subcommands
     default_base_template_dir = os.path.join(os.path.expanduser("~"), ".local/share")
     default_obi_template_dir = os.path.join(
@@ -187,7 +188,7 @@ def main():
             pass
     elif arguments['stop']:
         res = fabric.api.execute(task.room_task, room, "stop")
-        res.update(fabric.api.execute(task.stop_task))
+        res.update(fabric.api.execute(task.stop_task, arguments["--force"] or arguments["-f"]))
     elif arguments['clean']:
         res = fabric.api.execute(task.room_task, room, "clean")
         res.update(fabric.api.execute(task.clean_task))

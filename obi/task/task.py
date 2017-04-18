@@ -150,7 +150,7 @@ def clean_task():
 
 @task
 @parallel
-def stop_task():
+def stop_task(force=False):
     """
     obi stop
     """
@@ -162,7 +162,10 @@ def stop_task():
     with env.cd(env.project_dir):
         for cmd in env.config.get("local-pre-stop-cmds", []):
             local(cmd)
-    default_stop = "pkill -SIGTERM -f '[a-z/]+{0} .*' || true".format(env.target_name)
+    signal = "SIGTERM"
+    if force:
+      signal = "SIGKILL"
+    default_stop = "pkill -{0} -f '[a-z/]+{1} .*' || true".format(signal, env.target_name)
     stop_cmd = env.config.get("stop-cmd", default_stop)
     env.run(stop_cmd)
     with env.cd(env.project_dir):

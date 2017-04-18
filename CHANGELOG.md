@@ -7,6 +7,7 @@ This project does not use semver.
 ## [Unreleased]
 ### Added
 - Add command completion for bash
+- Add optional flag --force (-f for short) to `obi stop` to send a SIGKILL message instead of the usual SIGTERM
 
 ## [3.2.0] - 2016-01-26
 ### Added
