@@ -254,6 +254,27 @@ eval "$(ssh-agent -s)"
 ssh-add -K ~/.ssh/id_rsa
 ```
 
+## Bash command completion
+
+obi ships with a tab-completion script for bash. When you install obi with homebrew,
+the script is installed to `/usr/local/etc/bash_completion.d/obi`. Add a snippet
+like the following to your preferred bash config file:
+```bash
+if [ -f /usr/local/etc/bash_completion.d/obi ]; then
+  source /usr/local/etc/bash_completion.d/obi
+fi
+```
+zsh users can use the same file, by adding a similar snippet to their `.zshrc`:
+```zsh
+if [ -f /usr/local/etc/bash_completion.d/obi ]; then
+  autoload bashcompinit
+  bashcompinit
+  source /usr/local/etc/bash_completion.d/obi
+fi
+```
+If you installed obi by using `pip`, you will need to install the command completion
+script manually.
+
 ## Editor tips
 
 ### emacs
