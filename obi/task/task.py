@@ -10,6 +10,7 @@ import fabric
 import os
 import stat
 import yaml
+import re
 
 from fabric.api import env  # the global env variable
 from fabric.api import (local, run) # the global env variable
