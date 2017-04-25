@@ -129,6 +129,8 @@ def build_task():
             cmake_args = " ".join(cmake_args)
             # Arguments for the build step
             build_args = env.config.get("build-args", [])
+            if len(build_args) == 1 and re.match(r"^-(j|l)\d+ -(j|l)\d+$", build_args[0]):
+                build_args = build_args[0].split(" ")
             build_args = " ".join(map(shlexquote, build_args))
             env.run("mkdir -p {0}".format(shlexquote(env.build_dir)))
             env.run("cmake -H{0} -B{1} {2}".format(shlexquote(env.project_dir), shlexquote(env.build_dir), cmake_args))
