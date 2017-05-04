@@ -1,0 +1,3 @@
+import obi
+
+obi.main()
