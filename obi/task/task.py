@@ -223,8 +223,8 @@ def launch_task(debugger, extras):
 
     formatted_launch = "{0} {1} {2}".format(
         target, # {0}
-        " ".join(map(shlexquote, extras)), # {1}
-        " ".join(map(shlexquote, launch_args)) # {2}
+        " ".join(extras), # {1}
+        " ".join(launch_args) # {2}
     )
 
     env_vars = env.config.get("env-vars", {})
