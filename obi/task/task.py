@@ -131,7 +131,11 @@ def build_task():
             build_args = env.config.get("build-args", [])
             build_args = " ".join(map(shlexquote, build_args))
             env.run("mkdir -p {0}".format(shlexquote(env.build_dir)))
-            env.run("cmake -H{0} -B{1} {2}".format(shlexquote(env.project_dir), shlexquote(env.build_dir), cmake_args))
+            # If running cmake succeeds, we touch a file in the build directory
+            # to signal to future obi processes that they don't need to re-run
+            # cmake.  See issue #38
+            sentinel_path = env.build_dir + "/hello-obi.txt"
+            env.run("test -f {3} || (cmake -H{0} -B{1} {2} && touch {3})".format(shlexquote(env.project_dir), shlexquote(env.build_dir), cmake_args, shlexquote(sentinel_path)))
             env.run("cmake --build {0} -- {1}".format(shlexquote(env.build_dir), build_args))
 
 @task
