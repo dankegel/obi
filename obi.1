@@ -1,81 +1,112 @@
-.Dd January 20, 2017
-.Dt OBI 1
-.Os
-.Sh NAME
-.Nm obi
-.Nd 
-.Sh SYNOPSIS
-.Nm obi
-.Ar go
-.Op Ar <room>
-.Op Fl -debug
-.Op Fl -dry-run
-.Op Ar --
-.Op Ar <extras> Ar ...
-.Nm obi
-.Ar stop
-.Op Ar <room>
-.Op Fl -dry-run
-.Nm obi
-.Ar build
-.Op Ar <room>
-.Op Fl -dry-run
-.Nm obi
-.Ar clean
-.Op Ar <room>
-.Op Fl -dry-run
-.Nm obi
-.Ar rsync
-.Ar <room>
-.Op Fl -dry-run
-.Nm obi
-.Ar fetch
-.Ar <room>
-.Op Ar <file> Ar ...
-.Op Fl -dry-run
-.Nm obi
-.Ar new
-.Ar <template>
-.Ar <name>
-.Op Fl -template_home
-.Op Fl -g_speak_home
-.Nm obi
-.Ar template
-.Ar list
-.Op Fl -template_home
-.Nm obi
-.Ar template
-.Ar install
-.Ar <giturl>
-.Op Ar <name>
-.Op Fl -template_home
-.Nm obi
-.Ar template
-.Ar remove
-.Ar <name>
-.Op Fl -template_home
-.Nm obi
-.Ar template
-.Ar upgrade
-.Ar <name>
-.Op Fl -template_home
-.Pq
-.Nm obi
-.Fl -help | Fl -help | Fl -version
-.Sh DESCRIPTION
-
-.Sh OPTIONS
-.Bl -tag -width Ds
-.It Fl h , Fl -help
-Show this screen.
-.It Fl -version
-Show version.
-.It Fl -dry-run
-Optional: output the list of commands that the task runs.
-.It Fl -g_speak_home Ar <path>
-Optional: absolute path of g-speak dir to build against.
-.It Fl -template_home Ar <path>
-Optional: path containing installed obi templates.
-.It Fl -debug Ar <debugger>
-Optional: launches the application in a debugger.
-.El
+'\" t
+.\"     Title: obi
+.\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 05/09/2017
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "OBI" "1" "05/09/2017" "\ \&" "\ \&"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+obi \- command\-line tool for developing g\-speak applications
+.SH "SYNOPSIS"
+.sp
+.nf
+\fIobi\fR \-h | \-\-help | \-\-version
+\fIobi go\fR [<room>] [\-\-debug=<debugger>] [\-\-dry\-run] [\-\-] [<extras>\&...]
+\fIobi stop\fR [<room>] [\-f|\-\-force] [\-\-dry\-run]
+\fIobi build\fR [<room>] [\-\-dry\-run]
+\fIobi clean\fR [<room>] [\-\-dry\-run]
+\fIobi rsync\fR <room> [\-\-dry\-run]
+\fIobi fetch\fR <room> [<file>\&...] [\-\-dry\-run]
+\fIobi new\fR <template> <name> [\-\-template_home=<path>] [\-\-g_speak_home=<path>]
+\fIobi template list\fR [\-\-template_home=<path>]
+\fIobi template install\fR <giturl> [<name>] [\-\-template_home=<path>]
+\fIobi template remove\fR <name> [\-\-template_home=<path>]
+\fIobi template upgrade\fR <name> [\-\-template_home=<path>]
+\fIobi room list\fR
+.fi
+.SH "DESCRIPTION"
+.sp
+obi is a tool that assists in the development of g\-speak applications\&. It has two conceptual directions of functionality: deploying and controlling your working copy to development machines, and scaffolded creation of new applications from a template\&.
+.sp
+The first group of behaviors is dependent upon the \fBproject\&.yaml\fR file, located in the root of your project folder\&. \fBproject\&.yaml\fR specifies "rooms", sets of machines that can be targets for \fIobi go\fR and \fIobi stop\fR, and contains arguments for building and launching the program\&.
+.SH "VERBS"
+.PP
+\fBobi go\fR, obi go <secret\-volcano\-base>
+.RS 4
+\fIobi go\fR
+is used to run the application, either locally or on remote hosts in "room" <secret\-volcano\-base>\&. Rooms are configured in the application\(cqs project\&.yaml\&. By default, running your application in a room will rsync your working copy to /tmp/yourusername/project\-name/ on the machines of that room\&.
+.RE
+.PP
+\fBobi stop\fR, obi stop <volcano\-base>, obi stop \-\-force <volcano\-base>
+.RS 4
+\fIobi stop\fR
+is used to stop a running application, either locally or on remote hosts in "room" <volcano\-base>\&. By default, stop sends a SIGTERM to the app; the \-\-force flag will cause obi to issue SIGKILL instead\&.
+.RE
+.SH "OPTIONS"
+.PP
+\fB\-h\fR, \fB\-\-help\fR
+.RS 4
+Prints help message and usage examples\&.
+.RE
+.PP
+\fB\-\-version\fR
+.RS 4
+Prints
+\fIobi\fR\*(Aqs version number\&.
+.RE
+.PP
+\fB\-\-dry\-run\fR
+.RS 4
+Causes
+\fIobi\fR
+to print commands to STDOUT instead of executing them\&.
+.RE
+.PP
+\fB\-\-debug=\fR<debugger>
+.RS 4
+This option will wrap your application instance in the specified debugger\&. <debugger> can be a string of shell code to prepend to the app invocation, such as
+\fB\-\-debug="sudo strace \-e trace=open,read"\fR
+or
+\fB\-\-debug="lldb \-\-"\fR\&. <debugger> can also be an entry in the "debuggers" map in
+\fIproject\&.yaml\fR, in which case
+\fIobi\fR
+will prepend the corresponding value to the application invocation\&.
+.RE
+.PP
+\fB\-f\fR, \fB\-\-force\fR
+.RS 4
+This option causes
+\fIobi stop\fR
+to issue SIGKILL messages, instead of SIGTERM\&.
+.RE
+.PP
+\fB\-\-template_home=\fR<path>
+.RS 4
+This option changes
+\fIobi\fR\*(Aqs search path used for template discovery/installation\&.
+.RE
+.SH "SEE ALSO"
+.sp
+https://github\&.com/Oblong/obi

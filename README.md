@@ -18,6 +18,8 @@ template install  Install an obi template
 template remove   Remove an installed obi template
 template upgrade  Upgrade an installed obi template
 
+room list         List available rooms
+
 Edit project.yaml (in your project folder) to configure sets of machines for
 go/stop, set arguments for building and launching the program, and choose feld &
 screen proteins. By default, running your application in a room will deploy
@@ -35,6 +37,7 @@ Usage:
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
   obi template upgrade <name> [--template_home=<path>]
+  obi room list
   obi -h | --help | --version
 
 Options:

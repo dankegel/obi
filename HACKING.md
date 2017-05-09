@@ -15,5 +15,14 @@ with `python -m obi`.  For example:
 
 Will run obi from the source tree at `$HOME/src/obi`.
 
-You may want to also use a [virtualenv][] to keep this project's library
+You may want to also use a [virtualenv] to keep this project's library
 requirements isolated for development.
+
+[virtualenv]: https://virtualenv.pypa.io/en/stable/
+
+## manpage
+
+obi's manpage is generated from `obi.1.txt` which is an asciidoc file. Regenerate
+the roff file `obi.1` with asciidoc's `a2x` command:
+
+    a2x --doctype manpage --format manpage obi.1.txt
