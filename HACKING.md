@@ -15,7 +15,7 @@ with `python -m obi`.  For example:
 
 Will run obi from the source tree at `$HOME/src/obi`.
 
-You may want to also use a [virtualenv] to keep this project's library
+You may want to also use a [virtualenv][] to keep this project's library
 requirements isolated for development.
 
 [virtualenv]: https://virtualenv.pypa.io/en/stable/
