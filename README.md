@@ -79,7 +79,7 @@ brew upgrade obi
 
 ```bash
 # Install dependencies (if using system python)
-sudo apt-get install python-dev python-pip
+sudo apt-get install python-dev python-pip libffi-dev libssl-dev
 
 # Install
 # NOTE: You should make sure that ~/.local/bin is on your PATH if using the
@@ -95,10 +95,14 @@ pip install --upgrade --user git+https://github.com/Oblong/obi.git
 
 Install templates from a git repository:
 ```bash
-obi template install https://github.com/Oblong/obi-cpp.git
-obi template install https://github.com/Oblong/obi-greenhouse.git greenhouse
-obi template install https://github.com/Oblong/obi-growroom.git growroom
-obi template install git@gitlab.oblong.com:obi/gspeak.git
+# a good batteries-included starting point project template
+obi template install git@github.com:Oblong/obi-greenhouse.git greenhouse
+
+# a very basic C++ project template
+obi template install git@github.com:Oblong/obi-cpp.git cpp
+
+# a gspeak project template (Oblong internal only)
+obi template install git@gitlab.oblong.com:obi/gspeak gspeak
 ```
 
 The install command clones the specified repo to
@@ -120,6 +124,7 @@ Runs `git pull` in the appropriate repository.
 
 ```bash
 obi template remove obi-cpp
+obi template remove greenhouse
 obi template remove growroom
 ```
 
@@ -147,7 +152,7 @@ If the `--g_speak_home` option is not specified, obi attempts to find a default 
 
 #### example
 ```bash
-obi new greenhouse app-name --g_speak_home=/opt/oblong/g-speak3.22
+obi new greenhouse app-name --g_speak_home=/opt/oblong/g-speak3.26
 ```
 
 ### obi go [room-name]
