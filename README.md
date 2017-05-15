@@ -18,6 +18,8 @@ template install  Install an obi template
 template remove   Remove an installed obi template
 template upgrade  Upgrade an installed obi template
 
+room list         List available rooms
+
 Edit project.yaml (in your project folder) to configure sets of machines for
 go/stop, set arguments for building and launching the program, and choose feld &
 screen proteins. By default, running your application in a room will deploy
@@ -25,7 +27,7 @@ project files to /tmp/yourusername/project-name/ on the machines of that room.
 
 Usage:
   obi go [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
-  obi stop [<room>] [--dry-run]
+  obi stop [<room>] [-f|--force] [--dry-run]
   obi build [<room>] [--dry-run]
   obi clean [<room>] [--dry-run]
   obi rsync <room> [--dry-run]
@@ -35,6 +37,7 @@ Usage:
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
   obi template upgrade <name> [--template_home=<path>]
+  obi room list
   obi -h | --help | --version
 
 Options:
@@ -206,7 +209,8 @@ obi go room --debug="apitrace trace"
 
 ### obi stop [room-name]
 ---
-`obi stop [<room-name>]` stops the application. If `<room-name>` is not specified, then the application is stopped on the local machine.
+`obi stop [<room-name>]` stops the application. If `<room-name>` is not specified, then the application is stopped on the local machine. The `[-f|--force]` option
+will send a stronger message, such as SIGKILL.
 
 #### example
 ```bash
@@ -214,6 +218,8 @@ obi go room --debug="apitrace trace"
 obi stop
 # Stop the application on the host machines listed under the room named room
 obi stop room
+# Forcefully stop the application on remote hosts for the room named room
+obi stop room -f
 ```
 
 ### obi build [room-name]
@@ -240,14 +246,42 @@ obi clean
 obi clean room
 ```
 
-## Branches in this repo
+## SSH tips
 
-We make release tarballs off of the HEAD of master (https://github.com/Oblong/homebrew-tools/blob/master/obi.rb#L4)
+obi depends on having passwordless SSH access to remote hosts. If you're running
+on a mac and having SSH troubles, make sure your SSH keys are loaded into your
+key agent. On mac, you can add this to your `~/.ssh/config`:
+```
+Host *
+  UseKeychain yes
+  AddKeysToAgent yes
+```
+Alternatively, you can add this script snippet to your shell startup:
+```
+eval "$(ssh-agent -s)"
+ssh-add -K ~/.ssh/id_rsa
+```
 
-`brew install obi --HEAD` installs from the HEAD of dev (https://github.com/Oblong/homebrew-tools/blob/master/obi.rb#L6)
+## Bash command completion
 
-All new work should land on dev. We announce internally when pushing changes to dev, and ask that dev users update. After a few weeks, if all is well, we merge dev to master and tag a release.
-
+obi ships with a tab-completion script for bash. When you install obi with homebrew,
+the script is installed to `/usr/local/etc/bash_completion.d/obi`. Add a snippet
+like the following to your preferred bash config file:
+```bash
+if [ -f /usr/local/etc/bash_completion.d/obi ]; then
+  source /usr/local/etc/bash_completion.d/obi
+fi
+```
+zsh users can use the same file, by adding a similar snippet to their `.zshrc`:
+```zsh
+if [ -f /usr/local/etc/bash_completion.d/obi ]; then
+  autoload bashcompinit
+  bashcompinit
+  source /usr/local/etc/bash_completion.d/obi
+fi
+```
+If you installed obi by using `pip`, you will need to install the command completion
+script manually.
 
 ## Editor tips
 

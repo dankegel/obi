@@ -18,6 +18,8 @@ template install  Install an obi template
 template remove   Remove an installed obi template
 template upgrade  Upgrade an installed obi template
 
+room list         List available rooms
+
 Edit project.yaml (in your project folder) to configure sets of machines for
 go/stop, set arguments for building and launching the program, and choose feld &
 screen proteins. By default, running your application in a room will deploy
@@ -25,7 +27,7 @@ project files to /tmp/yourusername/project-name/ on the machines of that room.
 
 Usage:
   obi go [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
-  obi stop [<room>] [--dry-run]
+  obi stop [<room>] [-f|--force] [--dry-run]
   obi build [<room>] [--dry-run]
   obi clean [<room>] [--dry-run]
   obi rsync <room> [--dry-run]
@@ -35,6 +37,7 @@ Usage:
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
   obi template upgrade <name> [--template_home=<path>]
+  obi room list
   obi -h | --help | --version
 
 Options:
@@ -128,6 +131,7 @@ def main():
     if sys.argv[1:] == ["wan"]:
         return subprocess.call(["telnet", "towel.blinkenlights.nl"])
 
+
     # defaults for the template subcommands
     default_base_template_dir = os.path.join(os.path.expanduser("~"), ".local/share")
     default_obi_template_dir = os.path.join(
@@ -187,7 +191,7 @@ def main():
             pass
     elif arguments['stop']:
         res = fabric.api.execute(task.room_task, room, "stop")
-        res.update(fabric.api.execute(task.stop_task))
+        res.update(fabric.api.execute(task.stop_task, arguments["--force"] or arguments["-f"]))
     elif arguments['clean']:
         res = fabric.api.execute(task.room_task, room, "clean")
         res.update(fabric.api.execute(task.clean_task))
@@ -252,7 +256,12 @@ def main():
             else:
                 print("No template installed with name " + template_name)
                 return 1
-
+    elif arguments['room']:
+        if arguments['list']:
+            # converts project.yaml into Dict
+            config = task.load_project_config(task.project_yaml())
+            for room in sorted(config.get("rooms", {})):
+                print(room)
     return 0
 
 if __name__ == '__main__':

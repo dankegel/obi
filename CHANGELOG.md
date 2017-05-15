@@ -5,8 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project does not use semver.
 
 ## [Unreleased]
+### Added
+- Add command completion for bash
+- Add optional flag --force (-f for short) to `obi stop` to send a SIGKILL message instead of the usual SIGTERM
+- Add new command `obi room list` that lists configured rooms
+- Add asciidoc documentation, used to generate `obi.1` roff manpage
 
-## [3.2.0] - 2016-01-26
+### Fixed
+- Add shell escaping to arguments passed to shell invocations
+- Prevent rerunning cmake when unnecessary by using a sentinel file in the build folder
+
+## [3.2.0] - 2017-01-26
 ### Added
 - Add changelog
 - Add new property, `rsync-extra-opts`, in project.yaml to specify rsync arguments for `obi rsync`

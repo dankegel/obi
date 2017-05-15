@@ -10,6 +10,7 @@ import fabric
 import os
 import stat
 import yaml
+import re
 
 from fabric.api import env  # the global env variable
 from fabric.api import (local, run) # the global env variable
@@ -128,10 +129,16 @@ def build_task():
             cmake_args = " ".join(cmake_args)
             # Arguments for the build step
             build_args = env.config.get("build-args", [])
-            build_args = " ".join(build_args)
-            env.run("mkdir -p {0}".format(env.build_dir))
-            env.run("cmake -H\"{0}\" -B\"{1}\" {2}".format(env.project_dir, env.build_dir, cmake_args))
-            env.run("cmake --build \"{0}\" -- {1}".format(env.build_dir, build_args))
+            if len(build_args) == 1 and re.match(r"^-(j|l)\d+ -(j|l)\d+$", build_args[0]):
+                build_args = build_args[0].split(" ")
+            build_args = " ".join(map(shlexquote, build_args))
+            env.run("mkdir -p {0}".format(shlexquote(env.build_dir)))
+            # If running cmake succeeds, we touch a file in the build directory
+            # to signal to future obi processes that they don't need to re-run
+            # cmake.  See issue #38
+            sentinel_path = env.build_dir + "/hello-obi.txt"
+            env.run("test -f {3} || (cmake -H{0} -B{1} {2} && touch {3})".format(shlexquote(env.project_dir), shlexquote(env.build_dir), cmake_args, shlexquote(sentinel_path)))
+            env.run("cmake --build {0} -- {1}".format(shlexquote(env.build_dir), build_args))
 
 @task
 @parallel
@@ -145,12 +152,12 @@ def clean_task():
             if user_specified_clean:
                 env.run(user_specified_clean)
         else:
-            clean_cmd = "rm -rf {0} || true".format(env.build_dir)
+            clean_cmd = "rm -rf {0} || true".format(shlexquote(env.build_dir))
             env.run(clean_cmd)
 
 @task
 @parallel
-def stop_task():
+def stop_task(force=False):
     """
     obi stop
     """
@@ -162,7 +169,10 @@ def stop_task():
     with env.cd(env.project_dir):
         for cmd in env.config.get("local-pre-stop-cmds", []):
             local(cmd)
-    default_stop = "pkill -SIGTERM -f '[a-z/]+{0} .*' || true".format(env.target_name)
+    signal = "SIGTERM"
+    if force:
+      signal = "SIGKILL"
+    default_stop = "pkill -{0} -f '[a-z/]+{1} .*' || true".format(signal, env.target_name)
     stop_cmd = env.config.get("stop-cmd", default_stop)
     env.run(stop_cmd)
     with env.cd(env.project_dir):
@@ -264,7 +274,7 @@ def rsync_task():
     a new directory /home/username/foldername (if needed) and place the
     files there.
     """
-    env.run("mkdir -p {0}".format(env.project_dir))
+    env.run("mkdir -p {0}".format(shlexquote(env.project_dir)))
     return fabric.contrib.project.rsync_project(
         local_dir=env.local_project_dir + "/",
         remote_dir=env.project_dir,
@@ -291,7 +301,7 @@ def load_project_config(config_path):
                 abort("Error: problem loading " + project_config_file)
             return config
     except Exception as e:
-        abort("Cannot load project.yaml file at {0}\nException: {1}".format(config_path, e.message))
+        abort("Cannot load project.yaml file at {0}\nException: {1}".format(config_path, e))
 
 def project_yaml():
     """
@@ -309,3 +319,15 @@ def project_yaml():
             current = parent
             parent = parent_dir(current)
     abort("Could not find the project.yaml file in {0} or any parent directories".format(os.getcwd()))
+
+# taken from https://github.com/python/cpython/blob/c80b0175c88be9611b6eea7a60104b4488839a04/Lib/shlex.py#L308
+#_find_unsafe = re.compile(r'[^\w@%+=:,./-]', re.ASCII).search
+_find_unsafe = re.compile(r'[^\w@%+=:,./-]').search #re.ASCII is py3
+def shlexquote(s):
+    """Return a shell-escaped version of the string *s*."""
+    if not s: return "''"
+    if _find_unsafe(s) is None: return s
+
+    # use single quotes, and put single quotes into double quotes
+    # the string $'b is then quoted as '$'"'"'b'
+    return "'" + s.replace("'", "'\"'\"'") + "'"

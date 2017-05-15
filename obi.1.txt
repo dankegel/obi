@@ -1,0 +1,88 @@
+OBI(1)
+======
+:doctype: manpage
+
+
+NAME
+----
+ obi - command-line tool for developing g-speak applications
+
+
+SYNOPSIS
+--------
+[verse]
+'obi' -h | --help | --version
+'obi go' [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
+'obi stop' [<room>] [-f|--force] [--dry-run]
+'obi build' [<room>] [--dry-run]
+'obi clean' [<room>] [--dry-run]
+'obi rsync' <room> [--dry-run]
+'obi fetch' <room> [<file>...] [--dry-run]
+'obi new' <template> <name> [--template_home=<path>] [--g_speak_home=<path>]
+'obi template list' [--template_home=<path>]
+'obi template install' <giturl> [<name>] [--template_home=<path>]
+'obi template remove' <name> [--template_home=<path>]
+'obi template upgrade' <name> [--template_home=<path>]
+'obi room list'
+
+
+DESCRIPTION
+-----------
+
+obi is a tool that assists in the development of g-speak applications. It has two
+conceptual directions of functionality: deploying and controlling your working copy to
+development machines, and scaffolded creation of new applications from a template.
+
+The first group of behaviors is dependent upon the *project.yaml* file, located
+in the root of your project folder. *project.yaml* specifies "rooms", sets of
+machines that can be targets for 'obi go' and 'obi stop', and contains arguments for
+building and launching the program.
+
+
+VERBS
+-----
+
+*obi go*::
+obi go <secret-volcano-base>::
+    'obi go' is used to run the application, either locally or on remote hosts
+    in "room" <secret-volcano-base>. Rooms are configured in the application's
+    project.yaml. By default, running your application in a room will rsync your
+    working copy to /tmp/yourusername/project-name/ on the machines of that room.
+
+*obi stop*::
+obi stop <volcano-base>::
+obi stop --force <volcano-base>::
+    'obi stop' is used to stop a running application, either locally or on remote
+    hosts in "room" <volcano-base>. By default, stop sends a SIGTERM to the app;
+    the --force flag will cause obi to issue SIGKILL instead.
+
+
+OPTIONS
+-------
+*-h*::
+*--help*::
+    Prints help message and usage examples.
+
+*--version*::
+    Prints 'obi''s version number.
+
+*--dry-run*::
+    Causes 'obi' to print commands to STDOUT instead of executing them.
+
+*--debug=*<debugger>::
+    This option will wrap your application instance in the specified debugger.
+    <debugger> can be a string of shell code to prepend to the app invocation,
+    such as *--debug="sudo strace -e trace=open,read"* or *--debug="lldb --"*.
+    <debugger> can also be an entry in the "debuggers" map in 'project.yaml', in which
+    case 'obi' will prepend the corresponding value to the application invocation.
+
+*-f*::
+*--force*::
+    This option causes 'obi stop' to issue SIGKILL messages, instead of SIGTERM.
+
+*--template_home=*<path>::
+    This option changes 'obi''s search path used for template discovery/installation.
+
+SEE ALSO
+--------
+https://github.com/Oblong/obi
