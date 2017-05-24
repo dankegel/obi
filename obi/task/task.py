@@ -125,7 +125,7 @@ def build_task():
                 env.run(user_specified_build)
         else:
             # Arguments for the cmake step
-            cmake_args = env.config.get("cmake-args", [])
+            cmake_args = map(shlexquote, env.config.get("cmake-args", []))
             cmake_args = " ".join(cmake_args)
             # Arguments for the build step
             build_args = env.config.get("build-args", [])
