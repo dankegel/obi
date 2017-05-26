@@ -64,11 +64,8 @@ Options:
 # Install homebrew
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
-# Add the Oblong/homebrew-tools tap @ github.com/Oblong/homebrew-tools
-brew tap Oblong/homebrew-tools
-
-# Install
-brew install obi
+# Install from Oblong's homebrew-tools tap @ github.com/Oblong/homebrew-tools
+brew install Oblong/tools/obi
 
 # Upgrading
 brew update
