@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project does not use semver.
 
+## Unreleased
+
+### Fixed
+- Improved the regex used by `obi stop room` to prevent killing unintended processes
+
 ## [3.3.0] - 2017-05-15
 ### Added
 - Add command completion for bash
