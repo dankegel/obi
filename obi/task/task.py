@@ -98,11 +98,7 @@ def room_task(room_name, task_name=None):
         env.hosts = room.get("hosts", [])
         env.use_ssh_config = True
         # Default remote project dir is /tmp/localusername/projectname
-        env.project_dir = room.get("project-dir",
-                                   os.path.join(os.path.sep,
-                                                "tmp",
-                                                env.local_user,
-                                                project_name))
+        env.project_dir = room.get("project-dir", default_remote_project_folder())
         env.run = run
         env.background_run = lambda cmd: env.run(cmd, pty=False)
         env.file_exists = fabric.contrib.files.exists
@@ -183,10 +179,21 @@ def stop_task(force=False):
     with env.cd(env.project_dir):
         for cmd in env.config.get("local-pre-stop-cmds", []):
             local(cmd)
+
+    target_regex = find_launch_target()
+    # why this funny construct? to be extremely specific about what our regex is
+    # when run on a remote room, we want to match only `obi go room` invokations
+    # of our current project, but launched by any user
+    if target_regex.startswith(default_remote_project_folder()):
+        target_regex = target_regex.replace(default_remote_project_folder(),
+                                            default_remote_project_folder().replace(
+                                                    env.local_user,
+                                                    "[a-z_][a-z0-9_]{0,30}"))
+
     signal = "SIGTERM"
     if force:
       signal = "SIGKILL"
-    default_stop = "pkill -{0} -f '[a-z/]+{1} .*' || true".format(signal, env.target_name)
+    default_stop = "pkill -{0} -f '{1} ' || true".format(signal, target)
     stop_cmd = env.config.get("stop-cmd", default_stop)
     env.run(stop_cmd)
     with env.cd(env.project_dir):
@@ -219,21 +226,7 @@ def launch_task(debugger, extras):
     Handles launching the application in obi go
     """
 
-    target = ""
-    # Did the user specify a target?
-    config_target = env.config.get("target", None)
-    if config_target:
-        target = os.path.join(env.project_dir, config_target)
-    # TODO(jshrake): Consider nesting these conditionals
-    # Look for a binary with name env.target_name in the build directory
-    if not env.file_exists(target):
-        target = os.path.join(env.build_dir, env.target_name)
-    # Look for a binary with name env.target_name in the binary directory
-    if not env.file_exists(target):
-        target = os.path.join(env.project_dir, "bin", env.target_name)
-    # Just give up -- can't find the target name
-    if not env.file_exists(target):
-        abort("Cannot find target binary to launch. Please specify the relative path to the binary via the target key")
+    target = find_launch_target()
 
     launch_args = env.config.get("launch-args", [])
 
@@ -345,3 +338,31 @@ def shlexquote(s):
     # use single quotes, and put single quotes into double quotes
     # the string $'b is then quoted as '$'"'"'b'
     return "'" + s.replace("'", "'\"'\"'") + "'"
+
+def find_launch_target():
+    """
+    returns the absolute path to the binary we're going to launch
+    """
+    target = ""
+    # Did the user specify a target?
+    config_target = env.config.get("target", None)
+    if config_target:
+        target = os.path.join(env.project_dir, config_target)
+    # TODO(jshrake): Consider nesting these conditionals
+    # Look for a binary with name env.target_name in the build directory
+    if not env.file_exists(target):
+        target = os.path.join(env.build_dir, env.target_name)
+    # Look for a binary with name env.target_name in the binary directory
+    if not env.file_exists(target):
+        target = os.path.join(env.project_dir, "bin", env.target_name)
+    # Just give up -- can't find the target name
+    if not env.file_exists(target):
+        abort("Cannot find target binary to launch. Please specify the relative path to the binary via the target key")
+
+    return target
+
+def default_remote_project_folder():
+    """
+    default destination for remote runs, /tmp/localusername/projectname
+    """
+    return os.path.join(os.path.sep, "tmp", env.local_user, env.project_name)
