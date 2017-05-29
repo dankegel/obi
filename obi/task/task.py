@@ -6,6 +6,7 @@ Implementations for the obi tasks
 - obi go
 '''
 from __future__ import print_function
+import hashlib
 import fabric
 import os
 import stat
@@ -125,19 +126,32 @@ def build_task():
                 env.run(user_specified_build)
         else:
             # Arguments for the cmake step
-            cmake_args = env.config.get("cmake-args", [])
+            cmake_args = map(shlexquote, env.config.get("cmake-args", []))
             cmake_args = " ".join(cmake_args)
+            sentinel_hash = hashlib.sha256(cmake_args).hexdigest()
             # Arguments for the build step
             build_args = env.config.get("build-args", [])
             if len(build_args) == 1 and re.match(r"^-(j|l)\d+ -(j|l)\d+$", build_args[0]):
                 build_args = build_args[0].split(" ")
             build_args = " ".join(map(shlexquote, build_args))
             env.run("mkdir -p {0}".format(shlexquote(env.build_dir)))
-            # If running cmake succeeds, we touch a file in the build directory
+            # If running cmake succeeds, we make a file in the build directory
             # to signal to future obi processes that they don't need to re-run
-            # cmake.  See issue #38
+            # cmake (unless cmake-args, and therefore sentinel_hash, changes).
+            # See issue #38 and issue #120
             sentinel_path = env.build_dir + "/hello-obi.txt"
-            env.run("test -f {3} || (cmake -H{0} -B{1} {2} && touch {3})".format(shlexquote(env.project_dir), shlexquote(env.build_dir), cmake_args, shlexquote(sentinel_path)))
+            # translation from shell to pseudocode:
+            #   * if the contents of SENTINEL_PATH match SENTINEL_HASH, do nothing
+            #   * else, run cmake with cmake-args and write SENTINEL_HASH to SENTINEL_PATH
+            env.run(
+                "test $(cat {sentinel_path} 2>/dev/null || echo fart) = {sentinel_hash} "\
+                "  || (cmake -H{project_dir} -B{build_dir} {cmake_args} && " \
+                "      echo {sentinel_hash} > {sentinel_path})".format(
+                    project_dir=shlexquote(env.project_dir),
+                    build_dir=shlexquote(env.build_dir),
+                    cmake_args=cmake_args,
+                    sentinel_path=shlexquote(sentinel_path),
+                    sentinel_hash=sentinel_hash))
             env.run("cmake --build {0} -- {1}".format(shlexquote(env.build_dir), build_args))
 
 @task
