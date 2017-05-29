@@ -193,7 +193,7 @@ def stop_task(force=False):
     signal = "SIGTERM"
     if force:
       signal = "SIGKILL"
-    default_stop = "pkill -{0} -f '{1} ' || true".format(signal, target)
+    default_stop = "pkill -{0} -f '{1} ' || true".format(signal, target_regex)
     stop_cmd = env.config.get("stop-cmd", default_stop)
     env.run(stop_cmd)
     with env.cd(env.project_dir):
