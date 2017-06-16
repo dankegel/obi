@@ -180,15 +180,15 @@ def stop_task(force=False):
         for cmd in env.config.get("local-pre-stop-cmds", []):
             local(cmd)
 
-    target_regex = find_launch_target()
+    # target_regex = find_launch_target()
     # why this funny construct? to be extremely specific about what our regex is
-    # when run on a remote room, we want to match only `obi go room` invokations
+    # when run on a remote room, we want to match only `obi go room` invocations
     # of our current project, but launched by any user
-    if target_regex.startswith(default_remote_project_folder()):
-        target_regex = target_regex.replace(default_remote_project_folder(),
-                                            default_remote_project_folder().replace(
-                                                    env.local_user,
-                                                    "[a-z_][a-z0-9_]{0,30}"))
+    # if target_regex.startswith(default_remote_project_folder()):
+    #     target_regex = target_regex.replace(default_remote_project_folder(),
+    #                                         default_remote_project_folder().replace(
+    #                                                 env.local_user,
+    #                                                 "[a-z_][a-z0-9_]{0,30}"))
 
     signal = "SIGTERM"
     if force:
