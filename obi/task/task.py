@@ -8,6 +8,7 @@ Implementations for the obi tasks
 from __future__ import print_function
 import hashlib
 import fabric
+import subprocess
 import os
 import stat
 import time
@@ -109,6 +110,25 @@ def room_task(room_name, task_name=None):
         env.launch_format_str = "sh -c '(({0} nohup {1} > {2} 2> {2}) &)'"
         env.debug_launch_format_str = "tmux new -d -s {0} '{1}'".format(env.target_name, "{0} {1} {2}")
     env.build_dir = os.path.abspath(env.relpath(os.path.join(env.project_dir, env.config.get("build-dir", "build"))))
+    ssh_precheck()
+
+
+def ssh_precheck():
+    """
+    Detect whether SSHing to remote hosts will succeed, and if not, present
+    the user with serial SSH connections. This will surface SSH's complaints
+    to the person who can resolve them.
+    """
+    if not fabric.state.output['running']:
+        return
+    if env.hosts == ['localhost']:
+        return
+    for hostname in env.hosts:
+        devnull = open(os.devnull, 'w')
+        exitcode = subprocess.call(["ssh", "-o", "BatchMode=yes", env.user + "@" + hostname, "-t", "true"], stdout=devnull, stderr=devnull)
+        if exitcode > 0:
+            local("ssh " + env.user + "@" + hostname + " -t true")
+
 
 @task
 @parallel
