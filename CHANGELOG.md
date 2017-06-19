@@ -4,10 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project does not use semver.
 
-## Unreleased
+
+## [3.4.0] - 2017-06-19
+
+### Changed
+- cmake-args are now shell escaped
 
 ### Fixed
-- Improved the regex used by `obi stop room` to prevent killing unintended processes
+- CMakeFiles are regenerated when cmake-args changes
 
 ## [3.3.0] - 2017-05-15
 ### Added
