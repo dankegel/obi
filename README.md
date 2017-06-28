@@ -36,7 +36,7 @@ Usage:
   obi template list [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
-  obi template upgrade <name> [--template_home=<path>]
+  obi template upgrade [--all|<name>] [--template_home=<path>]
   obi room list
   obi -h | --help | --version
 
@@ -116,6 +116,12 @@ obi template upgrade growroom
 ```
 
 Runs `git pull` in the appropriate repository.
+
+```bash
+obi template upgrade --all
+```
+
+Upgrades all installed obi templates.
 
 ### Removing
 

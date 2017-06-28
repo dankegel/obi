@@ -69,7 +69,7 @@ _obi_template_upgrade()
     cur="${COMP_WORDS[COMP_CWORD]}"
 
     if [ $COMP_CWORD -ge 3 ]; then
-        COMPREPLY=( $( compgen -W '--template_home= ' -- $cur) )
+        COMPREPLY=( $( compgen -W '--all --template_home= ' -- $cur) )
     fi
 }
 

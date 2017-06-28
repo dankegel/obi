@@ -36,7 +36,7 @@ Usage:
   obi template list [--template_home=<path>]
   obi template install <giturl> [<name>] [--template_home=<path>]
   obi template remove <name> [--template_home=<path>]
-  obi template upgrade <name> [--template_home=<path>]
+  obi template upgrade [--all|<name>] [--template_home=<path>]
   obi room list
   obi -h | --help | --version
 
@@ -238,15 +238,23 @@ def main():
             return res
         elif arguments['upgrade']:
             template_root = arguments["--template_home"] or default_obi_template_dir
-            template_name = arguments["<name>"]
-            template_path = os.path.join(template_root, template_name)
-            if os.path.exists(template_path):
-                res = subprocess.call(["git", "pull"], cwd=template_path)
-                print("Upgraded template at {}".format(template_path))
-                return res
+            if arguments["--all"]:
+                for d in os.listdir(template_root):
+                    dirpath = os.path.join(template_root, d)
+                    if os.path.exists(dirpath):
+                        print("Upgrading template at {}:".format(dirpath))
+                        subprocess.call(["git", "pull"], cwd=dirpath)
+
             else:
-                print("No template installed with name " + template_name)
-                return 1
+                template_name = arguments["<name>"]
+                template_path = os.path.join(template_root, template_name)
+                if os.path.exists(template_path):
+                    res = subprocess.call(["git", "pull"], cwd=template_path)
+                    print("Upgraded template at {}".format(template_path))
+                    return res
+                else:
+                    print("No template installed with name " + template_name)
+                    return 1
         elif arguments['remove']:
             template_root = arguments["--template_home"] or default_obi_template_dir
             template_name = arguments["<name>"]
