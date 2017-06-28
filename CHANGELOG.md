@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project does not use semver.
 
+## Unreleased
+
+### Added
+- Add --all flag to obi template upgrade, which upgrades all installed templates [[5ef8494](https://github.com/Oblong/obi/commit/5ef849444f8c3bf9b0ed89e0ff50deec3fbebb17)]
 
 ## [3.4.0] - 2017-06-19
 
