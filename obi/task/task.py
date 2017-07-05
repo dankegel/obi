@@ -10,6 +10,7 @@ import hashlib
 import fabric
 import os
 import stat
+import time
 import yaml
 import re
 
@@ -122,8 +123,24 @@ def build_task():
                 env.run(user_specified_build)
         else:
             # Arguments for the cmake step
-            cmake_args = map(shlexquote, env.config.get("cmake-args", []))
-            cmake_args = " ".join(cmake_args)
+            cmake_args = env.config.get("cmake-args", [])
+            # workaround for naughty old templates
+            buggy_arg = '-G "Unix Makefiles"'
+            if buggy_arg in cmake_args:
+                cmake_args.remove(buggy_arg)
+                nag = 'Buggy cmake-arg {} detected in config and ignored.\n' \
+                      'To avoid seeing this message, remove this entry from ' \
+                      'cmake-args in project.yaml.'.format(buggy_arg)
+                print('!!!!!!!!!!!!!!!!!')
+                print('!!! BEGIN NAG !!!')
+                print('!!!!!!!!!!!!!!!!!')
+                print(nag)
+                print('(Sleeping to give you time to read this)')
+                time.sleep(4.20)
+                print('!!!!!!!!!!!!!!!!!')
+                print('!!!  END NAG  !!!')
+                print('!!!!!!!!!!!!!!!!!')
+            cmake_args = ' '.join(map(shlexquote, cmake_args))
             sentinel_hash = hashlib.sha256(cmake_args).hexdigest()
             # Arguments for the build step
             build_args = env.config.get("build-args", [])
