@@ -6,6 +6,9 @@ This project does not use semver.
 
 ## Unreleased
 
+### Changed
+- `obi stop` will not issue pkill without a specified target [[471dd9a](https://github.com/Oblong/obi/commit/471dd9a06fab9bf09288d76eafe0bad6c17f3ab7)]
+
 ## [3.4.2] - 2017-07-10
 
 ### Added
