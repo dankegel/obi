@@ -10,7 +10,7 @@ This project does not use semver.
 - `obi stop` will not issue pkill without a specified target [[471dd9a](https://github.com/Oblong/obi/commit/471dd9a06fab9bf09288d76eafe0bad6c17f3ab7)]
 
 ### Fixed
-- `obi upgrade --all` will return an error code if one or more templates failed to upgrade
+- `obi upgrade --all` will return an error code if one or more templates failed to upgrade [[aa198b0](https://github.com/Oblong/obi/commit/aa198b098548bcb5d2f0589d3ad937586d105e6b)]
 
 ## [3.4.2] - 2017-07-10
 
