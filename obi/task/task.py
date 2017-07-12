@@ -212,7 +212,10 @@ def stop_task(force=False):
       signal = "SIGKILL"
     # temporarily ignore above code and issue signal to env.target_name because
     # target_regex won't hit webthing-enabled projects due to shell wrapper
-    default_stop = "pkill -{0} -f '[a-z/]+{1} ' || true".format(signal, env.target_name)
+    if env.target_name:
+        default_stop = "pkill -{0} -f '[a-z/]+{1} ' || true".format(signal, env.target_name)
+    else:
+        default_stop = "echo 'no pkill command issued because target=\"\"'"
     stop_cmd = env.config.get("stop-cmd", default_stop)
     env.run(stop_cmd)
     with env.cd(env.project_dir):
