@@ -239,11 +239,15 @@ def main():
         elif arguments['upgrade']:
             template_root = arguments["--template_home"] or default_obi_template_dir
             if arguments["--all"]:
+                retcode = 0
                 for d in os.listdir(template_root):
                     dirpath = os.path.join(template_root, d)
                     if os.path.exists(dirpath):
                         print("Upgrading template at {}:".format(dirpath))
-                        subprocess.call(["git", "pull"], cwd=dirpath)
+                        res = subprocess.call(["git", "pull"], cwd=dirpath)
+                        if res > 0:
+                            retcode = res
+                return retcode
 
             else:
                 template_name = arguments["<name>"]
