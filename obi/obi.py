@@ -129,7 +129,9 @@ def main():
 
     # easter egg
     if sys.argv[1:] == ["wan"]:
-        return subprocess.call(["telnet", "towel.blinkenlights.nl"])
+        # this call looks wrong but is correct https://stackoverflow.com/questions/14174366
+        os.execlp("telnet", "telnet", "towel.blinkenlights.nl")
+        # os.exec does not return
 
 
     # defaults for the template subcommands
