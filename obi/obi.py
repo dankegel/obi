@@ -53,6 +53,7 @@ from __future__ import print_function
 import os
 import re
 import sys
+import signal
 import pkg_resources
 import imp
 import subprocess
@@ -63,6 +64,10 @@ import datetime
 from . import task
 from distutils.version import StrictVersion
 import glob
+
+def sigint_handler(signal_number, stack_frame):
+    print ("obi received ^C")
+    sys.exit(0)
 
 def mkdir_p(path):
     """
@@ -127,6 +132,9 @@ def main():
     """
     version = pkg_resources.require("oblong-obi")[0].version
 
+    # installs SIGINT (ctrl-C) interrupt handler
+    signal.signal(signal.SIGINT, sigint_handler)
+
     # easter egg
     if sys.argv[1:] == ["wan"]:
         return subprocess.call(["telnet", "towel.blinkenlights.nl"])
@@ -180,15 +188,11 @@ def main():
         res.update(fabric.api.execute(task.build_task))
     elif arguments['go']:
         extras = arguments.get('<extras>', [])
-        # Gracefully handle keyboard interrupts
-        try:
-            res = fabric.api.execute(task.room_task, room, "go")
-            res.update(fabric.api.execute(fabric.api.env.rsync))
-            res.update(fabric.api.execute(task.build_task))
-            res.update(fabric.api.execute(task.stop_task))
-            res.update(fabric.api.execute(task.launch_task, arguments['--debug'], extras))
-        except KeyboardInterrupt:
-            pass
+        res = fabric.api.execute(task.room_task, room, "go")
+        res.update(fabric.api.execute(fabric.api.env.rsync))
+        res.update(fabric.api.execute(task.build_task))
+        res.update(fabric.api.execute(task.stop_task))
+        res.update(fabric.api.execute(task.launch_task, arguments['--debug'], extras))
     elif arguments['stop']:
         res = fabric.api.execute(task.room_task, room, "stop")
         res.update(fabric.api.execute(task.stop_task, arguments["--force"] or arguments["-f"]))
