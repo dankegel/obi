@@ -93,13 +93,13 @@ pip install --upgrade --user git+https://github.com/Oblong/obi.git
 Install templates from a git repository:
 ```bash
 # a good batteries-included starting point project template
-obi template install git@github.com:Oblong/obi-greenhouse.git greenhouse
+obi template install https://github.com/Oblong/obi-greenhouse.git greenhouse
 
 # a very basic C++ project template
-obi template install git@github.com:Oblong/obi-cpp.git cpp
+obi template install https://github.com/Oblong/obi-cpp.git cpp
 
-# a gspeak project template (Oblong internal only)
-obi template install git@gitlab.oblong.com:obi/gspeak gspeak
+# a gspeak project template
+obi template install https://github.com/Oblong/obi-gspeak.git gspeak
 ```
 
 The install command clones the specified repo to
