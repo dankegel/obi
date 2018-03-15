@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project does not use semver.
 
+## Unreleased
+
+### Fixed
+- fixed `obi stop` regex to hit processes without arguments [[29886e1](https://github.com/Oblong/obi/commit/29886e1d1bb05c05b8b473b45d5db5af2d7ac717)]
+
 ## [3.4.4] - 2017-09-21
 
 ### Changed
