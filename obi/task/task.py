@@ -213,7 +213,7 @@ def stop_task(force=False):
     # temporarily ignore above code and issue signal to env.target_name because
     # target_regex won't hit webthing-enabled projects due to shell wrapper
     if env.target_name:
-        default_stop = "pkill -{0} -f '[a-z/]+{1} ' || true".format(signal, env.target_name)
+        default_stop = "pkill -{0} -f '[a-z/]+{1}([[:space:]]|$)' || true".format(signal, env.target_name)
     else:
         default_stop = "echo 'no pkill command issued because target=\"\"'"
     stop_cmd = env.config.get("stop-cmd", default_stop)
