@@ -259,7 +259,7 @@ def launch_task(debugger, extras):
     )
 
     env_vars = env.config.get("env-vars", {})
-    env_vars = " ".join(["{0}={1}".format(key, shlexquote(val)) for key, val in env_vars.items()])
+    env_vars = " ".join(["{0}={1}".format(key, val) for key, val in env_vars.items()])
 
     with env.cd(env.project_dir):
         # Process pre-launch commands
