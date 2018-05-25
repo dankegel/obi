@@ -157,7 +157,7 @@ def build_task():
             #   * if the contents of SENTINEL_PATH match SENTINEL_HASH, do nothing
             #   * else, run cmake with cmake-args and write SENTINEL_HASH to SENTINEL_PATH
             env.run(
-                "test $(cat {sentinel_path} 2>/dev/null || echo fart) = {sentinel_hash} "\
+                "test $(cat {sentinel_path} 2>/dev/null || echo definitelynotashahash) = {sentinel_hash} "\
                 "  || (cmake -H{project_dir} -B{build_dir} {cmake_args} && " \
                 "      echo {sentinel_hash} > {sentinel_path})".format(
                     project_dir=shlexquote(env.project_dir),
