@@ -153,6 +153,11 @@ def build_task():
             # cmake (unless cmake-args, and therefore sentinel_hash, changes).
             # See issue #38 and issue #120
             sentinel_path = env.build_dir + "/hello-obi.txt"
+            # this is a work-around for an apple bug to filter out the resulting
+            # ugly linker warnings:
+            # See issue 150 or:
+            # https://forums.developer.apple.com/thread/97850
+            warning_filter="ld: warning: text-based stub file"
             # translation from shell to pseudocode:
             #   * if the contents of SENTINEL_PATH match SENTINEL_HASH, do nothing
             #   * else, run cmake with cmake-args and write SENTINEL_HASH to SENTINEL_PATH
@@ -165,7 +170,8 @@ def build_task():
                     cmake_args=cmake_args,
                     sentinel_path=shlexquote(sentinel_path),
                     sentinel_hash=sentinel_hash))
-            env.run("cmake --build {0} -- {1}".format(shlexquote(env.build_dir), build_args))
+            env.run("cmake --build {0} -- {1} 2>&1 | grep -v \"{2}\"".
+                format(shlexquote(env.build_dir), build_args, warning_filter))
 
 @task
 @parallel
