@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 This project does not use semver.
 
+## [3.4.7] - 2018-12-13
+
+### Fixed
+- Added a filter to the build printout to hide apple ld warnings about files
+  being out of sync. For more information, see [issue #150](https://github.com/Oblong/obi/issues/150)
+  [[65a3538](https://github.com/Oblong/obi/commit/65a35380352f099146441201a64b371ee846de6d)]
+- Improved clarity of the non-hash default value output at runtime [[6330a44](https://github.com/Oblong/obi/commit/6330a44cd9106a77cb620397c0c8d5832c59d7c7)]
+
 ## [3.4.6] - 2018-03-15
 
 ### Fixed
