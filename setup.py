@@ -23,7 +23,7 @@ setup(
         'docopt==0.6.2',
         'fabric==1.10.3',
         'jinja2==2.8',
-        'pyyaml==3.11'
+        'pyyaml==4.2b4'
     ],
     classifiers=[
         "Programming Language :: Python",
