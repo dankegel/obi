@@ -2,7 +2,7 @@
 
 ## Dependencies
 
-    pip install docopt==0.6.2' fabric==1.10.3' jinja2==2.8' pyyaml==3.11
+    pip install docopt==0.6.2' fabric==1.10.3' jinja2==2.8.1' pyyaml==3.11
 
 
 ## Tips
@@ -10,6 +10,24 @@
 When developing obi, you may want to test your changes with a real world
 project.  Installing it with pip or homebrew every time you make a change can
 be tedious.
+
+You can instead use an ["editable"](https://pip.pypa.io/en/latest/reference/pip_install/?highlight=editable#editable-installs) install with `pip`.
+
+```bash
+brew unlink obi
+pip install --local -e .
+obi --help
+```
+
+Changes you make in this folder will be reflected when you run `obi` again.
+When you're finished developing:
+
+```bash
+pip uninstall oblong-obi
+brew link obi
+```
+
+### ye olde way
 
 Instead, you can add your local obi source tree to `PYTHONPATH` and execute it
 with `python -m obi`.  For example:
