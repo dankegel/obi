@@ -11,7 +11,7 @@ setup(
         'console_scripts': ['obi=obi.obi:main']
     },
     include_package_data=True,
-    version="3.4.8",
+    version="3.4.9",
     description="g-speak project generator",
     long_description=open('README.md', 'rt').read(),
     author="Justin Shrake",
@@ -22,7 +22,7 @@ setup(
     install_requires=[
         'docopt==0.6.2',
         'fabric==1.10.3',
-        'jinja2==2.8',
+        'jinja2==2.8.1',
         'pyyaml==3.11'
     ],
     classifiers=[
