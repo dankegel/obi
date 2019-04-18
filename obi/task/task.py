@@ -170,8 +170,8 @@ def build_task():
                     cmake_args=cmake_args,
                     sentinel_path=shlexquote(sentinel_path),
                     sentinel_hash=sentinel_hash))
-            env.run("cmake --build {0} -- {1} 2>&1 | grep -v \"{2}\"".
-                format(shlexquote(env.build_dir), build_args, warning_filter))
+            env.run("set -o pipefail; cmake --build {0} -- {1} 2>&1 | grep -v '{2}'".
+                format(shlexquote(env.build_dir), build_args, warning_filter), shell="/bin/bash")
 
 @task
 @parallel
