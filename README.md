@@ -72,19 +72,22 @@ brew update
 brew upgrade obi
 ```
 
-### Ubuntu (via pip)
+### Ubuntu 18.04 (via pip)
 
 ```bash
 # Install dependencies (if using system python)
-sudo apt-get install python-dev python-pip libffi-dev libssl-dev
+sudo apt-get install python2-dev python-pip libffi-dev libssl-dev
 
 # Install
 # NOTE: You should make sure that ~/.local/bin is on your PATH if using the
 # --user flag.
-pip install --user git+https://github.com/Oblong/obi.git
+pip2 install --user git+https://github.com/Oblong/obi.git
 
 # Upgrading
-pip install --upgrade --user git+https://github.com/Oblong/obi.git
+pip2 install --upgrade --user git+https://github.com/Oblong/obi.git
+
+# Uninstalling
+pip2 uninstall oblong-obi
 ```
 ## Templates
 
