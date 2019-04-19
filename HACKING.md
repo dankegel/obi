@@ -49,3 +49,13 @@ obi's manpage is generated from `obi.1.txt` which is an asciidoc file. Regenerat
 the roff file `obi.1` with asciidoc's `a2x` command:
 
     a2x --doctype manpage --format manpage obi.1.txt
+
+## release guide:
+
+1. Increment version number in setup.py and commit that.
+2. Push to github.
+3. Go here https://github.com/Oblong/obi/releases and click "Draft a new release"
+4. Type in `vX.Y.Z` as the tag name.
+5. Click the "Target: **master**" button and choose the commit that is the tip
+   of master. (not doing this risks someone pushing in the meantime)
+6. Fill out the rest of the form, and click "Publish release" or "Save draft".
