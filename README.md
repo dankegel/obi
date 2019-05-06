@@ -68,8 +68,7 @@ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/
 brew install Oblong/tools/obi
 
 # Upgrading
-brew update
-brew upgrade obi
+brew update && brew upgrade obi
 ```
 
 ### Ubuntu 18.04 (via pip)
