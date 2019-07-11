@@ -64,6 +64,7 @@ from . import task
 from distutils.version import StrictVersion
 import glob
 
+
 def mkdir_p(path):
     """
     mkdir -p
@@ -71,18 +72,21 @@ def mkdir_p(path):
     """
     try:
         os.makedirs(path)
-    except OSError as exc: # Python >2.5
+    except OSError as exc:  # Python >2.5
         if exc.errno == errno.EEXIST and os.path.isdir(path):
             pass
-        else: raise
+        else:
+            raise
+
 
 def g_speak_version_key(x):
     """
     Extract a g-speak version from a g-speak home.
     """
     v = os.path.split(x)[1]
-    v = v.split('g-speak')[1]
+    v = v.split("g-speak")[1]
     return StrictVersion(v)
+
 
 def get_g_speak_home(arguments):
     """
@@ -96,9 +100,9 @@ def get_g_speak_home(arguments):
     if arguments["--g_speak_home"]:
         g_speak_home = arguments["--g_speak_home"]
         set_by = "command-line"
-    elif 'G_SPEAK_HOME' in os.environ:
+    elif "G_SPEAK_HOME" in os.environ:
         # extract the version from the enviornment variable
-        g_speak_home = os.environ['G_SPEAK_HOME']
+        g_speak_home = os.environ["G_SPEAK_HOME"]
         set_by = "environment variable G_SPEAK_HOME"
     else:
         # Exclude directories like "g-speak-64-2" or "deps-64-11"
@@ -109,8 +113,7 @@ def get_g_speak_home(arguments):
             g_speak_home = max(items, key=g_speak_version_key)
             set_by = "directory lookup"
         except (OSError, IndexError):
-            print("Could not find the g_speak home directory in {}"
-                  .format(path))
+            print("Could not find the g_speak home directory in {}".format(path))
             print("Run new again and specify: --g_speak_home=/path/to/g-speak")
             sys.exit(1)
 
@@ -129,81 +132,100 @@ def main():
 
     # easter egg
     if sys.argv[1:] == ["wan"]:
-        # this call looks wrong but is correct https://stackoverflow.com/questions/14174366
-        os.execlp("telnet", "telnet", "towel.blinkenlights.nl")
-        # os.exec does not return
-
+        os.execlp(
+            "telnet", "telnet", "towel.blinkenlights.nl"
+        )  # os.exec does not return
 
     # defaults for the template subcommands
     default_base_template_dir = os.path.join(os.path.expanduser("~"), ".local/share")
     default_obi_template_dir = os.path.join(
-        os.environ.get("XDG_DATA_HOME", default_base_template_dir), "oblong", "obi")
+        os.environ.get("XDG_DATA_HOME", default_base_template_dir), "oblong", "obi"
+    )
 
     arguments = docopt.docopt(__doc__, version=version, help=True)
     room = arguments.get("<room>", "localhost") or "localhost"
-    if room == '--':
-        room = "localhost" # special case: docopt caught '--' as a room name
+    if room == "--":
+        room = "localhost"  # special case: docopt caught '--' as a room name
 
-    if arguments.get('--dry-run', False):
+    if arguments.get("--dry-run", False):
         fabric.api.execute(task.dryrun)
-    if arguments['new']:
+    if arguments["new"]:
         template_root = arguments["--template_home"] or default_obi_template_dir
-        project_name = arguments['<name>']
+        project_name = arguments["<name>"]
         allowed_name_regex = "^[a-zA-Z][a-zA-Z0-9-]*$"
         if not re.match(allowed_name_regex, project_name):
-            print("Name must match {0} but you entered '{1}'".format(allowed_name_regex, project_name))
+            print(
+                "Name must match {0} but you entered '{1}'".format(
+                    allowed_name_regex, project_name
+                )
+            )
             return 1
-        template_name = arguments['<template>']
-        template_path = os.path.join(template_root, template_name, template_name + ".py")
+        template_name = arguments["<template>"]
+        template_path = os.path.join(
+            template_root, template_name, template_name + ".py"
+        )
         if not os.path.exists(template_path):
             print("Could not find template {0}".format(template_name))
             print("Expected to find {0}".format(template_path))
-            print("Installed templates:\n{0}".format(
-                "\n".join([d for d in os.listdir(template_root)])))
+            print(
+                "Installed templates:\n{0}".format(
+                    "\n".join([d for d in os.listdir(template_root)])
+                )
+            )
             return 1
         template = imp.load_source(template_name, template_path)
-        if not hasattr(template, 'obi_new'):
-            print ("Error: template {0} does not expose a function named obi_new".format(template_name))
+        if not hasattr(template, "obi_new"):
+            print(
+                "Error: template {0} does not expose a function named obi_new".format(
+                    template_name
+                )
+            )
             return 1
         project_path = os.path.join(os.getcwd(), project_name)
         g_speak_home = get_g_speak_home(arguments)
         # regex to extract g-speak version number
         # if g_speak_home = "/opt/oblong/g-speak3.19"
         # then g_speak_vers = "3.19"
-        g_speak_version = re.search(r'(\d+\.\d+)', g_speak_home).group()
-        template.obi_new(project_path=project_path,
-                         project_name=project_name,
-                         g_speak_home=g_speak_home,
-                         g_speak_version=g_speak_version)
-        print("Project {0} created successfully!".format(arguments['<name>']))
-    elif arguments['build']:
+        g_speak_version = re.search(r"(\d+\.\d+)", g_speak_home).group()
+        template.obi_new(
+            project_path=project_path,
+            project_name=project_name,
+            g_speak_home=g_speak_home,
+            g_speak_version=g_speak_version,
+        )
+        print("Project {0} created successfully!".format(arguments["<name>"]))
+    elif arguments["build"]:
         res = fabric.api.execute(task.room_task, room, "build")
         res.update(fabric.api.execute(fabric.api.env.rsync))
         res.update(fabric.api.execute(task.build_task))
-    elif arguments['go']:
-        extras = arguments.get('<extras>', [])
+    elif arguments["go"]:
+        extras = arguments.get("<extras>", [])
         # Gracefully handle keyboard interrupts
         try:
             res = fabric.api.execute(task.room_task, room, "go")
             res.update(fabric.api.execute(fabric.api.env.rsync))
             res.update(fabric.api.execute(task.build_task))
             res.update(fabric.api.execute(task.stop_task))
-            res.update(fabric.api.execute(task.launch_task, arguments['--debug'], extras))
+            res.update(
+                fabric.api.execute(task.launch_task, arguments["--debug"], extras)
+            )
         except KeyboardInterrupt:
             pass
-    elif arguments['stop']:
+    elif arguments["stop"]:
         res = fabric.api.execute(task.room_task, room, "stop")
-        res.update(fabric.api.execute(task.stop_task, arguments["--force"] or arguments["-f"]))
-    elif arguments['clean']:
+        res.update(
+            fabric.api.execute(task.stop_task, arguments["--force"] or arguments["-f"])
+        )
+    elif arguments["clean"]:
         res = fabric.api.execute(task.room_task, room, "clean")
         res.update(fabric.api.execute(task.clean_task))
-    elif arguments['rsync']:
+    elif arguments["rsync"]:
         res = fabric.api.execute(task.room_task, room, "rsync")
         res.update(fabric.api.execute(fabric.api.env.rsync))
-    elif arguments['fetch']:
+    elif arguments["fetch"]:
         timestr = datetime.datetime.now().strftime("%Y%m%d.%H%M%S")
         fetch_dir = "fetched.{}".format(timestr)
-        files = arguments.get('<file>', [])
+        files = arguments.get("<file>", [])
         res = fabric.api.execute(task.room_task, room, "fetch")
         res.update(fabric.api.execute(task.stop_task))
         res.update(fabric.api.execute(task.fetch_task, fetch_dir, files))
@@ -220,25 +242,28 @@ def main():
                 git_log_file.write(git_log)
         except:
             pass
-    elif arguments['template']:
-        if arguments['list']:
+    elif arguments["template"]:
+        if arguments["list"]:
             template_root = arguments["--template_home"] or default_obi_template_dir
             if os.path.exists(template_root):
-                print("Installed templates:\n{0}".format(
-                    "\n".join([d for d in os.listdir(template_root)])))
+                print(
+                    "Installed templates:\n{0}".format(
+                        "\n".join([d for d in os.listdir(template_root)])
+                    )
+                )
             else:
                 print("No templates installed at " + template_root)
-        elif arguments['install']:
+        elif arguments["install"]:
             template_root = arguments["--template_home"] or default_obi_template_dir
             mkdir_p(template_root)
-            giturl = arguments['<giturl>']
-            name = arguments['<name>'] or os.path.basename(giturl)
+            giturl = arguments["<giturl>"]
+            name = arguments["<name>"] or os.path.basename(giturl)
             if name.endswith(".git"):
                 name = name[:-4]
             res = subprocess.call(["git", "clone", giturl, name], cwd=template_root)
             print("Installed template {} to {}".format(name, template_root))
             return res
-        elif arguments['upgrade']:
+        elif arguments["upgrade"]:
             template_root = arguments["--template_home"] or default_obi_template_dir
             if arguments["--all"]:
                 retcode = 0
@@ -261,7 +286,7 @@ def main():
                 else:
                     print("No template installed with name " + template_name)
                     return 1
-        elif arguments['remove']:
+        elif arguments["remove"]:
             template_root = arguments["--template_home"] or default_obi_template_dir
             template_name = arguments["<name>"]
             template_path = os.path.join(template_root, template_name)
@@ -270,13 +295,14 @@ def main():
             else:
                 print("No template installed with name " + template_name)
                 return 1
-    elif arguments['room']:
-        if arguments['list']:
+    elif arguments["room"]:
+        if arguments["list"]:
             # converts project.yaml into Dict
             config = task.load_project_config(task.project_yaml())
             for room in sorted(config.get("rooms", {})):
                 print(room)
     return 0
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(main())

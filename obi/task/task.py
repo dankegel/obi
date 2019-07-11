@@ -1,10 +1,10 @@
-'''
+"""
 Implementations for the obi tasks
 - obi clean
 - obi stop
 - obi build
 - obi go
-'''
+"""
 from __future__ import print_function
 import hashlib
 import fabric
@@ -15,8 +15,8 @@ import yaml
 import re
 
 from fabric.api import env  # the global env variable
-from fabric.api import (local, run) # the global env variable
-from fabric.api import (task, parallel, runs_once) #decorators
+from fabric.api import local, run  # the global env variable
+from fabric.api import task, parallel, runs_once  # decorators
 
 from fabric.utils import abort
 from fabric.contrib.project import rsync_project
@@ -29,16 +29,28 @@ def dryrun():
     """Show, but don't run fabric commands"""
 
     global local, run
-    fabric.state.output['running'] = False
+    fabric.state.output["running"] = False
 
     # Redefine the local and run functions to simply output the command
     def local(command, capture=False, shell=None, running=None):
         print("{}".format(command))
 
-    def run(command, shell=True, pty=True, combine_stderr=None, quiet=False,
-            warn_only=False, stdout=None, stderr=None, running=None, timeout=None, shell_escape=None,
-            capture_buffer_size=None):
-        print("ssh -t {}@{} \"{}\"".format(env.user, env.host_string, command))
+    def run(
+        command,
+        shell=True,
+        pty=True,
+        combine_stderr=None,
+        quiet=False,
+        warn_only=False,
+        stdout=None,
+        stderr=None,
+        running=None,
+        timeout=None,
+        shell_escape=None,
+        capture_buffer_size=None,
+    ):
+        print('ssh -t {}@{} "{}"'.format(env.user, env.host_string, command))
+
 
 @task
 @runs_once
@@ -60,8 +72,12 @@ def room_task(room_name, task_name=None):
     rooms = config.get("rooms", {})
     room = rooms.get(room_name, None)
     if not room:
-        abort("""{0} is not a room name listed in project.yaml\n
-              Available room names: {1}""".format(room_name, rooms.keys()))
+        abort(
+            """{0} is not a room name listed in project.yaml\n
+              Available room names: {1}""".format(
+                room_name, rooms.keys()
+            )
+        )
 
     # Extract the top-level config sans the rooms config
     config_no_rooms = config.copy()
@@ -73,19 +89,18 @@ def room_task(room_name, task_name=None):
     # Calling basename on project_name should be harmless
     # In the case that the user specified target, say, build/foo,
     # then basename gives us foo
-    env.target_name = os.path.basename(
-        env.config.get("target", env.project_name))
+    env.target_name = os.path.basename(env.config.get("target", env.project_name))
 
     # Running locally if:
     # - User specified is-local: True
     # - Room name is localhost
     # - Hosts is empty
     if room.get("is-local", room_name == "localhost" or not room.get("hosts", [])):
-        env.hosts = ['localhost']
+        env.hosts = ["localhost"]
         env.use_ssh_config = False
         env.project_dir = env.local_project_dir
         env.file_exists = os.path.exists
-        env.rsync = lambda: None # Don't rsync when running locally -- noop
+        env.rsync = lambda: None  # Don't rsync when running locally -- noop
         env.cd = fabric.context_managers.lcd
         # Generate a shell script that duplicates the task
         task_name = task_name or env.tasks[-1]
@@ -95,7 +110,7 @@ def room_task(room_name, task_name=None):
         env.launch_format_str = "{0} {1}"
         env.debug_launch_format_str = "{0} {1} {2}"
     else:
-        env.user = room.get("user", env.local_user) # needed for remote run
+        env.user = room.get("user", env.local_user)  # needed for remote run
         env.hosts = room.get("hosts", [])
         env.use_ssh_config = True
         # Default remote project dir is /tmp/localusername/projectname
@@ -107,8 +122,13 @@ def room_task(room_name, task_name=None):
         env.cd = fabric.context_managers.cd
         env.relpath = lambda p: p
         env.launch_format_str = "sh -c '(({0} nohup {1} > {2} 2> {2}) &)'"
-        env.debug_launch_format_str = "tmux new -d -s {0} '{1}'".format(env.target_name, "{0} {1} {2}")
-    env.build_dir = os.path.abspath(env.relpath(os.path.join(env.project_dir, env.config.get("build-dir", "build"))))
+        env.debug_launch_format_str = "tmux new -d -s {0} '{1}'".format(
+            env.target_name, "{0} {1} {2}"
+        )
+    env.build_dir = os.path.abspath(
+        env.relpath(os.path.join(env.project_dir, env.config.get("build-dir", "build")))
+    )
+
 
 @task
 @parallel
@@ -128,23 +148,27 @@ def build_task():
             buggy_arg = '-G "Unix Makefiles"'
             if buggy_arg in cmake_args:
                 cmake_args.remove(buggy_arg)
-                nag = 'Buggy cmake-arg {} detected in config and ignored.\n' \
-                      'To avoid seeing this message, remove this entry from ' \
-                      'cmake-args in project.yaml.'.format(buggy_arg)
-                print('!!!!!!!!!!!!!!!!!')
-                print('!!! BEGIN NAG !!!')
-                print('!!!!!!!!!!!!!!!!!')
+                nag = (
+                    "Buggy cmake-arg {} detected in config and ignored.\n"
+                    "To avoid seeing this message, remove this entry from "
+                    "cmake-args in project.yaml.".format(buggy_arg)
+                )
+                print("!!!!!!!!!!!!!!!!!")
+                print("!!! BEGIN NAG !!!")
+                print("!!!!!!!!!!!!!!!!!")
                 print(nag)
-                print('(Sleeping to give you time to read this)')
+                print("(Sleeping to give you time to read this)")
                 time.sleep(4.20)
-                print('!!!!!!!!!!!!!!!!!')
-                print('!!!  END NAG  !!!')
-                print('!!!!!!!!!!!!!!!!!')
-            cmake_args = ' '.join(map(shlexquote, cmake_args))
+                print("!!!!!!!!!!!!!!!!!")
+                print("!!!  END NAG  !!!")
+                print("!!!!!!!!!!!!!!!!!")
+            cmake_args = " ".join(map(shlexquote, cmake_args))
             sentinel_hash = hashlib.sha256(cmake_args).hexdigest()
             # Arguments for the build step
             build_args = env.config.get("build-args", [])
-            if len(build_args) == 1 and re.match(r"^-(j|l)\d+ -(j|l)\d+$", build_args[0]):
+            if len(build_args) == 1 and re.match(
+                r"^-(j|l)\d+ -(j|l)\d+$", build_args[0]
+            ):
                 build_args = build_args[0].split(" ")
             build_args = " ".join(map(shlexquote, build_args))
             env.run("mkdir -p {0}".format(shlexquote(env.build_dir)))
@@ -157,21 +181,28 @@ def build_task():
             # ugly linker warnings:
             # See issue 150 or:
             # https://forums.developer.apple.com/thread/97850
-            warning_filter="ld: warning: text-based stub file"
+            warning_filter = "ld: warning: text-based stub file"
             # translation from shell to pseudocode:
             #   * if the contents of SENTINEL_PATH match SENTINEL_HASH, do nothing
             #   * else, run cmake with cmake-args and write SENTINEL_HASH to SENTINEL_PATH
             env.run(
-                "test $(cat {sentinel_path} 2>/dev/null || echo definitelynotashahash) = {sentinel_hash} "\
-                "  || (cmake -H{project_dir} -B{build_dir} {cmake_args} && " \
+                "test $(cat {sentinel_path} 2>/dev/null || echo definitelynotashahash) = {sentinel_hash} "
+                "  || (cmake -H{project_dir} -B{build_dir} {cmake_args} && "
                 "      echo {sentinel_hash} > {sentinel_path})".format(
                     project_dir=shlexquote(env.project_dir),
                     build_dir=shlexquote(env.build_dir),
                     cmake_args=cmake_args,
                     sentinel_path=shlexquote(sentinel_path),
-                    sentinel_hash=sentinel_hash))
-            env.run("set -o pipefail; cmake --build {0} -- {1} 2>&1 | grep -v '{2}'".
-                format(shlexquote(env.build_dir), build_args, warning_filter), shell="/bin/bash")
+                    sentinel_hash=sentinel_hash,
+                )
+            )
+            env.run(
+                "set -o pipefail; cmake --build {0} -- {1} 2>&1 | grep -v '{2}'".format(
+                    shlexquote(env.build_dir), build_args, warning_filter
+                ),
+                shell="/bin/bash",
+            )
+
 
 @task
 @parallel
@@ -187,6 +218,7 @@ def clean_task():
         else:
             clean_cmd = "rm -rf {0} || true".format(shlexquote(env.build_dir))
             env.run(clean_cmd)
+
 
 @task
 @parallel
@@ -215,11 +247,13 @@ def stop_task(force=False):
 
     signal = "SIGTERM"
     if force:
-      signal = "SIGKILL"
+        signal = "SIGKILL"
     # temporarily ignore above code and issue signal to env.target_name because
     # target_regex won't hit webthing-enabled projects due to shell wrapper
     if env.target_name:
-        default_stop = "pkill -{0} -f '[a-z/]+{1}([[:space:]]|$)' || true".format(signal, env.target_name)
+        default_stop = "pkill -{0} -f '[a-z/]+{1}([[:space:]]|$)' || true".format(
+            signal, env.target_name
+        )
     else:
         default_stop = "echo 'no pkill command issued because target=\"\"'"
     stop_cmd = env.config.get("stop-cmd", default_stop)
@@ -231,13 +265,14 @@ def stop_task(force=False):
         for cmd in env.config.get("local-post-stop-cmds", []):
             local(cmd)
 
+
 @task
 @parallel
 def fetch_task(fetch_files_to_dir, files):
     """
     obi fetch
     """
-    fetch_dir = fetch_files_to_dir + '/%(host)s/%(path)s'
+    fetch_dir = fetch_files_to_dir + "/%(host)s/%(path)s"
     files_to_fetch = files or env.config.get("fetch", [])
     with env.cd(env.project_dir):
         for f in files_to_fetch:
@@ -246,6 +281,7 @@ def fetch_task(fetch_files_to_dir, files):
             # dont fail when f doesn't exist on the remote machines
             except:
                 continue
+
 
 @task
 @parallel
@@ -259,9 +295,7 @@ def launch_task(debugger, extras):
     launch_args = env.config.get("launch-args", [])
 
     formatted_launch = "{0} {1} {2}".format(
-        target, # {0}
-        " ".join(extras), # {1}
-        " ".join(launch_args) # {2}
+        target, " ".join(extras), " ".join(launch_args)  # {0}  # {1}  # {2}
     )
 
     env_vars = env.config.get("env-vars", {})
@@ -276,17 +310,24 @@ def launch_task(debugger, extras):
             debuggers = env.config.get("debuggers", None)
             if debuggers:
                 debug_cmd = debuggers.get(debugger, debug_cmd)
-            default_launch = env.debug_launch_format_str.format(env_vars, debug_cmd, formatted_launch)
+            default_launch = env.debug_launch_format_str.format(
+                env_vars, debug_cmd, formatted_launch
+            )
             launch_cmd = env.config.get("debug-launch-cmd", default_launch)
             env.background_run(launch_cmd)
         else:
-            log_file = env.relpath(os.path.join(env.project_dir, env.target_name + ".log"))
-            default_launch = env.launch_format_str.format(env_vars, formatted_launch, log_file)
+            log_file = env.relpath(
+                os.path.join(env.project_dir, env.target_name + ".log")
+            )
+            default_launch = env.launch_format_str.format(
+                env_vars, formatted_launch, log_file
+            )
             launch_cmd = env.config.get("launch-cmd", default_launch)
             env.background_run(launch_cmd)
         # Process the post-launch commands
         for cmd in env.config.get("post-launch-cmds", []):
             env.run(cmd)
+
 
 @task
 @parallel
@@ -316,13 +357,16 @@ def rsync_task():
         delete=True,
         exclude=env.config.get("rsync-excludes", []),
         extra_opts=env.config.get("rsync-extra-opts", "--copy-links --partial"),
-        capture=True)
+        capture=True,
+    )
+
 
 def parent_dir(current_dir):
     """
     Returns the absolute path to the parent directory of current_dir
     """
     return os.path.abspath(os.path.join(current_dir, os.pardir))
+
 
 def load_project_config(config_path):
     """
@@ -336,7 +380,12 @@ def load_project_config(config_path):
                 abort("Error: problem loading " + project_config_file)
             return config
     except Exception as e:
-        abort("Cannot load project.yaml file at {0}\nException: {1}".format(config_path, e))
+        abort(
+            "Cannot load project.yaml file at {0}\nException: {1}".format(
+                config_path, e
+            )
+        )
+
 
 def project_yaml():
     """
@@ -353,19 +402,29 @@ def project_yaml():
         else:
             current = parent
             parent = parent_dir(current)
-    abort("Could not find the project.yaml file in {0} or any parent directories".format(os.getcwd()))
+    abort(
+        "Could not find the project.yaml file in {0} or any parent directories".format(
+            os.getcwd()
+        )
+    )
+
 
 # taken from https://github.com/python/cpython/blob/c80b0175c88be9611b6eea7a60104b4488839a04/Lib/shlex.py#L308
-#_find_unsafe = re.compile(r'[^\w@%+=:,./-]', re.ASCII).search
-_find_unsafe = re.compile(r'[^\w@%+=:,./-]').search #re.ASCII is py3
+# _find_unsafe = re.compile(r'[^\w@%+=:,./-]', re.ASCII).search
+_find_unsafe = re.compile(r"[^\w@%+=:,./-]").search  # re.ASCII is py3
+
+
 def shlexquote(s):
     """Return a shell-escaped version of the string *s*."""
-    if not s: return "''"
-    if _find_unsafe(s) is None: return s
+    if not s:
+        return "''"
+    if _find_unsafe(s) is None:
+        return s
 
     # use single quotes, and put single quotes into double quotes
     # the string $'b is then quoted as '$'"'"'b'
     return "'" + s.replace("'", "'\"'\"'") + "'"
+
 
 def find_launch_target():
     """
@@ -385,9 +444,12 @@ def find_launch_target():
         target = os.path.join(env.project_dir, "bin", env.target_name)
     # Just give up -- can't find the target name
     if not env.file_exists(target):
-        abort("Cannot find target binary to launch. Please specify the relative path to the binary via the target key")
+        abort(
+            "Cannot find target binary to launch. Please specify the relative path to the binary via the target key"
+        )
 
     return target
+
 
 def default_remote_project_folder():
     """
