@@ -26,8 +26,8 @@ screen proteins. By default, running your application in a room will deploy
 project files to /tmp/yourusername/project-name/ on the machines of that room.
 
 Usage:
-  obi go [<room>] [--debug=<debugger>] [--dry-run] [--] [<extras>...]
-  obi stop [<room>] [-f|--force] [--dry-run]
+  obi go [<room>] [--debug=<debugger>] [--dry-run] [--target=<exe>] [--] [<extras>...]
+  obi stop [<room>] [--target=<exe>] [-f|--force] [--dry-run]
   obi build [<room>] [--dry-run]
   obi clean [<room>] [--dry-run]
   obi rsync <room> [--dry-run]
@@ -47,6 +47,7 @@ Options:
   --g_speak_home=<path>   Optional: absolute path of g-speak dir to build against.
   --template_home=<path>  Optional: path containing installed obi templates.
   --debug=<debugger>      Optional: launches the application in a debugger.
+  --target=<exe>          Optional: launch another executable target
 """
 
 from __future__ import print_function
@@ -146,6 +147,11 @@ def main():
     room = arguments.get("<room>", "localhost") or "localhost"
     if room == "--":
         room = "localhost"  # special case: docopt caught '--' as a room name
+
+    # Command line arguments can sometimes override config settings (like the executable
+    # target)
+    fabric.api.env.config_overrides = dict()
+    fabric.api.env.config_overrides["target"] = arguments.get("--target")
 
     if arguments.get("--dry-run", False):
         fabric.api.execute(task.dryrun)

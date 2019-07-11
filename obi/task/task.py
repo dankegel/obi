@@ -9,7 +9,6 @@ from __future__ import print_function
 import hashlib
 import fabric
 import os
-import stat
 import time
 import yaml
 import re
@@ -19,11 +18,12 @@ from fabric.api import local, run  # the global env variable
 from fabric.api import task, parallel, runs_once  # decorators
 
 from fabric.utils import abort
-from fabric.contrib.project import rsync_project
-from fabric.contrib.files import exists
 import fabric.colors
+import fabric.contrib.files
+import fabric.contrib.project
 
-# Courtesy of https://github.com/pyinvoke/invoke/issues/324#issuecomment-215289564
+# Courtesy of
+# https://github.com/pyinvoke/invoke/issues/324#issuecomment-215289564
 @task
 def dryrun():
     """Show, but don't run fabric commands"""
@@ -89,7 +89,8 @@ def room_task(room_name, task_name=None):
     # Calling basename on project_name should be harmless
     # In the case that the user specified target, say, build/foo,
     # then basename gives us foo
-    env.target_name = os.path.basename(env.config.get("target", env.project_name))
+    env.target = env.config_overrides.get("target") or env.config.get("target")
+    env.target_name = os.path.basename(env.target or env.project_name)
 
     # Running locally if:
     # - User specified is-local: True
@@ -235,24 +236,15 @@ def stop_task(force=False):
         for cmd in env.config.get("local-pre-stop-cmds", []):
             local(cmd)
 
-    # target_regex = find_launch_target()
-    # why this funny construct? to be extremely specific about what our regex is
-    # when run on a remote room, we want to match only `obi go room` invocations
-    # of our current project, but launched by any user
-    # if target_regex.startswith(default_remote_project_folder()):
-    #     target_regex = target_regex.replace(default_remote_project_folder(),
-    #                                         default_remote_project_folder().replace(
-    #                                                 env.local_user,
-    #                                                 "[a-z_][a-z0-9_]{0,30}"))
-
     signal = "SIGTERM"
     if force:
         signal = "SIGKILL"
-    # temporarily ignore above code and issue signal to env.target_name because
-    # target_regex won't hit webthing-enabled projects due to shell wrapper
+
     if env.target_name:
-        default_stop = "pkill -{0} -f '[a-z/]+{1}([[:space:]]|$)' || true".format(
-            signal, env.target_name
+        # The `/tmp/[^[:space:]]` prefix is a guardrail to keep `obi go --target foo.sh`
+        # from pkilling itself.
+        default_stop = "pkill -{0} -f '/tmp/[^[:space:]]+/{1}([[:space:]]|$)' || true".format(
+            signal, re.escape(env.target_name)
         )
     else:
         default_stop = "echo 'no pkill command issued because target=\"\"'"
@@ -435,6 +427,13 @@ def find_launch_target():
     config_target = env.config.get("target", None)
     if config_target:
         target = os.path.join(env.project_dir, config_target)
+    target_override = env.config_overrides.get("target", None)
+    if target_override:
+        target = os.path.join(env.project_dir, target_override)
+        if not env.file_exists(target):
+            abort("Can't find target override from project root: {}"
+                    .format(target_override))
+
     # TODO(jshrake): Consider nesting these conditionals
     # Look for a binary with name env.target_name in the build directory
     if not env.file_exists(target):
