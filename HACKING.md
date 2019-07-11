@@ -15,15 +15,16 @@ You can instead use an ["editable"](https://pip.pypa.io/en/latest/reference/pip_
 
 ```bash
 brew unlink obi
-pip install --local -e .
+pip2 install -e .
 obi --help
 ```
 
-Changes you make in this folder will be reflected when you run `obi` again.
-When you're finished developing:
+This creates an "egg link" in `~/.local/lib/python2.X/site-packages` to your
+repo.  Changes you make in this repo will be reflected when you run `obi`
+again.  When you're finished developing:
 
 ```bash
-pip uninstall oblong-obi
+pip2 uninstall oblong-obi
 brew link obi
 ```
 
