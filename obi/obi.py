@@ -88,7 +88,7 @@ def get_g_speak_home(arguments):
     """
     Extract the gspeak version by hook or by crook
     We'll examine the gspeak argument passed, the G_SPEAK_HOME
-    enviornment variable, and finally we'll even look at your
+    environment variable, and finally we'll even look at your
     files for /opt/oblong/g-speakX.YY
     """
     g_speak_home = ""
@@ -146,6 +146,13 @@ def main():
 
     if arguments.get('--dry-run', False):
         fabric.api.execute(task.dryrun)
+    g_speak_home = get_g_speak_home(arguments)
+    g_speak_bin = g_speak_home + "/bin"
+    yobuild_home = os.popen("%s/ob-version | awk '/ob_yobuild_dir/ {print $3}'" % g_speak_bin).read().rstrip()
+    fabric.api.env.obi_extra_path = g_speak_home + "/bin"
+    # FIXME: probably don't want linux-gnu on mac
+    fabric.api.env.obi_extra_pkg_config_path = "%s/lib/pkgconfig:%s/lib/x86_64-linux-gnu/pkgconfig:%s/lib/pkgconfig" % (yobuild_home, yobuild_home, g_speak_home)
+    fabric.api.env.obi_boost_root = yobuild_home
     if arguments['new']:
         template_root = arguments["--template_home"] or default_obi_template_dir
         project_name = arguments['<name>']
@@ -166,7 +173,6 @@ def main():
             print ("Error: template {0} does not expose a function named obi_new".format(template_name))
             return 1
         project_path = os.path.join(os.getcwd(), project_name)
-        g_speak_home = get_g_speak_home(arguments)
         # regex to extract g-speak version number
         # if g_speak_home = "/opt/oblong/g-speak3.19"
         # then g_speak_vers = "3.19"
