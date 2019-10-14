@@ -172,12 +172,10 @@ def build_task():
             # Note: meson needs to be given some hints about how to find
             # a) itself, b) g-speak, and c) boost
             os.environ["PATH"] += ":%s" % env.obi_extra_path
-            os.environ["PKG_CONFIG_PATH"] = ":%s" % env.obi_extra_pkg_config_path
-            os.environ["BOOST_ROOT"] = env.obi_boost_root
             if 'meson-args' in env.config:
                 env.run(
                     "test $(cat {sentinel_path} 2>/dev/null || echo definitelynotashahash) = {sentinel_hash} "\
-                    "  || (meson {build_dir} {meson_args} && " \
+                    "  || (obenv meson {build_dir} {meson_args} && " \
                     "      echo {sentinel_hash} > {sentinel_path})".format(
                         project_dir=shlexquote(env.project_dir),
                         build_dir=shlexquote(env.build_dir),

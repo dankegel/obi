@@ -150,9 +150,6 @@ def main():
     g_speak_bin = g_speak_home + "/bin"
     yobuild_home = os.popen("%s/ob-version | awk '/ob_yobuild_dir/ {print $3}'" % g_speak_bin).read().rstrip()
     fabric.api.env.obi_extra_path = g_speak_home + "/bin"
-    # FIXME: probably don't want linux-gnu on mac
-    fabric.api.env.obi_extra_pkg_config_path = "%s/lib/pkgconfig:%s/lib/x86_64-linux-gnu/pkgconfig:%s/lib/pkgconfig" % (yobuild_home, yobuild_home, g_speak_home)
-    fabric.api.env.obi_boost_root = yobuild_home
     if arguments['new']:
         template_root = arguments["--template_home"] or default_obi_template_dir
         project_name = arguments['<name>']
